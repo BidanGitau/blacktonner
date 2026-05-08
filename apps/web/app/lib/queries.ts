@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { api } from "./api";
-import type { Product, Category, Order, AdminStats, PaginatedResponse } from "~/types";
+import type { Product, Category, Order, AdminStats, PaginatedResponse, Post } from "~/types";
 
 export const productKeys = {
   all: ["products"] as const,
@@ -187,5 +187,103 @@ export function useUpload() {
   return useMutation({
     mutationFn: (data: { filename: string; data: string }) =>
       api.post<{ url: string }>("/uploads", data).then((r) => r.data),
+  });
+}
+
+// ── Posts (blog) ─────────────────────────────────────────
+export const postKeys = {
+  all: ["posts"] as const,
+  list: (params: object) => [...postKeys.all, "list", params] as const,
+  detail: (slug: string) => [...postKeys.all, "detail", slug] as const,
+  adminList: (params: object) => [...postKeys.all, "admin", "list", params] as const,
+  adminDetail: (id: string) => [...postKeys.all, "admin", id] as const,
+};
+
+interface PostListParams {
+  category?: string;
+  search?: string;
+  limit?: number;
+}
+
+export function usePosts(params: PostListParams = {}) {
+  return useQuery({
+    queryKey: postKeys.list(params),
+    queryFn: async () => {
+      const { data } = await api.get<Post[]>("/posts", { params });
+      return data;
+    },
+  });
+}
+
+export function usePost(slug: string) {
+  return useQuery({
+    queryKey: postKeys.detail(slug),
+    queryFn: async () => {
+      const { data } = await api.get<Post>(`/posts/${slug}`);
+      return data;
+    },
+    enabled: !!slug,
+  });
+}
+
+interface AdminPostParams {
+  category?: string;
+  search?: string;
+  status?: "draft" | "published" | "all";
+}
+
+export function useAdminPosts(params: AdminPostParams = {}) {
+  return useQuery({
+    queryKey: postKeys.adminList(params),
+    queryFn: async () => {
+      const { data } = await api.get<Post[]>("/admin/posts", { params });
+      return data;
+    },
+  });
+}
+
+export function useAdminPost(id: string) {
+  return useQuery({
+    queryKey: postKeys.adminDetail(id),
+    queryFn: async () => {
+      const { data } = await api.get<Post>(`/admin/posts/${id}`);
+      return data;
+    },
+    enabled: !!id,
+  });
+}
+
+export function useCreatePost() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (payload: Partial<Post>) => {
+      const { data } = await api.post<Post>("/admin/posts", payload);
+      return data;
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: postKeys.all }),
+  });
+}
+
+export function useUpdatePost() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ id, ...payload }: Partial<Post> & { id: string }) => {
+      const { data } = await api.patch<Post>(`/admin/posts/${id}`, payload);
+      return data;
+    },
+    onSuccess: (_, vars) => {
+      qc.invalidateQueries({ queryKey: postKeys.all });
+      qc.invalidateQueries({ queryKey: postKeys.adminDetail(vars.id) });
+    },
+  });
+}
+
+export function useDeletePost() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (id: string) => {
+      await api.delete(`/admin/posts/${id}`);
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: postKeys.all }),
   });
 }

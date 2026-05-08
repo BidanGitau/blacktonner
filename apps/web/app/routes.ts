@@ -12,6 +12,9 @@ export default [
     route("order-confirmed/:id", "routes/_public/order-confirmed/index.tsx"),
     route("search", "routes/_public/search/index.tsx"),
     route("catalogue", "routes/_public/catalogue/index.tsx"),
+    route("about", "routes/_public/about/index.tsx"),
+    route("blog", "routes/_public/blog/index.tsx"),
+    route("blog/:slug", "routes/_public/blog/detail.tsx"),
   ]),
 
   // Auth (no shell)
@@ -29,5 +32,8 @@ export default [
     route("admin/categories", "routes/_admin/categories.tsx"),
     route("admin/prices", "routes/_admin/prices.tsx"),
     route("admin/scraper", "routes/_admin/scraper.tsx"),
+    route("admin/posts", "routes/_admin/posts.tsx"),
+    route("admin/posts/new", "routes/_admin/post-new.tsx"),
+    route("admin/posts/:id/edit", "routes/_admin/post-edit.tsx"),
   ]),
 ] satisfies RouteConfig;

@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link } from "react-router";
 import { Heart, CheckCircle } from "lucide-react";
+import { useCartStore } from "~/store/cart";
 import { useWishlistStore } from "~/store/wishlist";
 import type { Product } from "~/types";
 
@@ -19,6 +20,7 @@ export function ProductCard({ product, index = 0 }: Props) {
   const [added, setAdded] = useState(false);
   const toggle = useWishlistStore((s) => s.toggle);
   const wishlisted = useWishlistStore((s) => s.has(product.id));
+  const addToCart = useCartStore((s) => s.add);
 
   const lowStock = product.stock > 0 && product.stock <= 5;
   const outOfStock = product.stock === 0;
@@ -26,7 +28,9 @@ export function ProductCard({ product, index = 0 }: Props) {
 
   function handleAddToCart(e: React.MouseEvent) {
     e.preventDefault();
+    e.stopPropagation();
     if (outOfStock) return;
+    addToCart(product, 1);
     setAdded(true);
     setTimeout(() => setAdded(false), 1600);
   }

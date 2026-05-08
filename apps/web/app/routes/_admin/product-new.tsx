@@ -91,27 +91,27 @@ export default function ProductNewPage() {
   }
 
   const inputCls = (field: string) =>
-    `w-full text-sm border rounded-xl px-3 py-2.5 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-800 ${errors[field] ? "border-red-400" : "border-slate-200"}`;
+    `w-full h-9 text-sm border rounded-md px-3 bg-white focus:outline-none focus:ring-1 focus:ring-black/40 text-black ${errors[field] ? "border-red-400" : "border-stone-200"}`;
 
   return (
-    <div className="w-full p-6 lg:p-8">
-      <div className="flex items-center gap-3 mb-6">
-        <Link to="/admin/products" className="flex h-8 w-8 items-center justify-center rounded-lg text-slate-400 hover:bg-slate-100 transition-colors">
+    <div className="px-6 py-8 lg:px-10 lg:py-10">
+      <header className="mb-8 flex items-center gap-4 border-b border-stone-200 pb-6">
+        <Link to="/admin/products" className="flex h-9 w-9 items-center justify-center rounded-md border border-stone-200 text-black/55 transition-colors hover:border-black hover:text-black">
           <ArrowLeft className="h-4 w-4" />
         </Link>
         <div>
-          <h1 className="text-2xl font-bold text-slate-900">Add product</h1>
-          <p className="text-sm text-slate-500 mt-0.5">New product will be live immediately</p>
+          <p className="mb-1 text-[10px] font-bold uppercase tracking-[0.22em] text-black/40">New product</p>
+          <h1 className="font-black tracking-tight text-black" style={{ fontSize: "clamp(1.5rem, 2.4vw, 2rem)" }}>Add product</h1>
         </div>
-      </div>
+      </header>
 
       <form onSubmit={handleSubmit} className="space-y-6">
         {/* Basic info */}
-        <section className="bg-white rounded-2xl border border-slate-200 p-6 space-y-4">
-          <h2 className="text-sm font-bold text-slate-700 uppercase tracking-wider">Basic Info</h2>
+        <section className="bg-white rounded-md border border-stone-200 p-6 space-y-4">
+          <h2 className="text-[10px] font-bold uppercase tracking-[0.22em] text-black/45">Basic Info</h2>
 
           <div className="space-y-1">
-            <label className="text-xs font-semibold text-slate-600">Product name *</label>
+            <label className="text-[10px] font-bold uppercase tracking-[0.18em] text-black/55">Product name *</label>
             <input
               value={form.name}
               onChange={(e) => { set("name", e.target.value); set("slug", autoSlug(e.target.value)); }}
@@ -123,12 +123,12 @@ export default function ProductNewPage() {
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-1">
-              <label className="text-xs font-semibold text-slate-600">Slug *</label>
+              <label className="text-[10px] font-bold uppercase tracking-[0.18em] text-black/55">Slug *</label>
               <input value={form.slug} onChange={(e) => set("slug", e.target.value)} placeholder="hp-laserjet-m404n" className={inputCls("slug")} />
               {errors.slug && <p className="text-xs text-red-500">{errors.slug}</p>}
             </div>
             <div className="space-y-1">
-              <label className="text-xs font-semibold text-slate-600">SKU *</label>
+              <label className="text-[10px] font-bold uppercase tracking-[0.18em] text-black/55">SKU *</label>
               <input value={form.sku} onChange={(e) => set("sku", e.target.value)} placeholder="HP-LJ-M404N" className={inputCls("sku")} />
               {errors.sku && <p className="text-xs text-red-500">{errors.sku}</p>}
             </div>
@@ -136,12 +136,12 @@ export default function ProductNewPage() {
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-1">
-              <label className="text-xs font-semibold text-slate-600">Brand *</label>
+              <label className="text-[10px] font-bold uppercase tracking-[0.18em] text-black/55">Brand *</label>
               <input value={form.brand} onChange={(e) => set("brand", e.target.value)} placeholder="HP" className={inputCls("brand")} />
               {errors.brand && <p className="text-xs text-red-500">{errors.brand}</p>}
             </div>
             <div className="space-y-1">
-              <label className="text-xs font-semibold text-slate-600">Category *</label>
+              <label className="text-[10px] font-bold uppercase tracking-[0.18em] text-black/55">Category *</label>
               <select value={form.categoryId} onChange={(e) => set("categoryId", e.target.value)} className={inputCls("categoryId")}>
                 <option value="">Select category</option>
                 {categories.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
@@ -151,7 +151,7 @@ export default function ProductNewPage() {
           </div>
 
           <div className="space-y-1">
-            <label className="text-xs font-semibold text-slate-600">Description</label>
+            <label className="text-[10px] font-bold uppercase tracking-[0.18em] text-black/55">Description</label>
             <textarea
               value={form.description}
               onChange={(e) => set("description", e.target.value)}
@@ -163,32 +163,32 @@ export default function ProductNewPage() {
         </section>
 
         {/* Pricing & Stock */}
-        <section className="bg-white rounded-2xl border border-slate-200 p-6 space-y-4">
-          <h2 className="text-sm font-bold text-slate-700 uppercase tracking-wider">Pricing & Stock</h2>
+        <section className="bg-white rounded-md border border-stone-200 p-6 space-y-4">
+          <h2 className="text-[10px] font-bold uppercase tracking-[0.22em] text-black/45">Pricing & Stock</h2>
           <div className="grid grid-cols-3 gap-4">
             <div className="space-y-1">
-              <label className="text-xs font-semibold text-slate-600">Sale price (KES) *</label>
+              <label className="text-[10px] font-bold uppercase tracking-[0.18em] text-black/55">Sale price (KES) *</label>
               <input type="number" min={0} value={form.price} onChange={(e) => set("price", e.target.value)} placeholder="28500" className={inputCls("price")} />
               {errors.price && <p className="text-xs text-red-500">{errors.price}</p>}
             </div>
             <div className="space-y-1">
-              <label className="text-xs font-semibold text-slate-600">Original price (KES)</label>
+              <label className="text-[10px] font-bold uppercase tracking-[0.18em] text-black/55">Original price (KES)</label>
               <input type="number" min={0} value={form.originalPrice} onChange={(e) => set("originalPrice", e.target.value)} placeholder="33000" className={inputCls("originalPrice")} />
             </div>
             <div className="space-y-1">
-              <label className="text-xs font-semibold text-slate-600">Cost price (KES) *</label>
+              <label className="text-[10px] font-bold uppercase tracking-[0.18em] text-black/55">Cost price (KES) *</label>
               <input type="number" min={0} value={form.costPrice} onChange={(e) => set("costPrice", e.target.value)} placeholder="22000" className={inputCls("costPrice")} />
               {errors.costPrice && <p className="text-xs text-red-500">{errors.costPrice}</p>}
             </div>
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-1">
-              <label className="text-xs font-semibold text-slate-600">Stock quantity</label>
+              <label className="text-[10px] font-bold uppercase tracking-[0.18em] text-black/55">Stock quantity</label>
               <input type="number" min={0} value={form.stock} onChange={(e) => set("stock", e.target.value)} className={inputCls("stock")} />
             </div>
             <div className="space-y-1">
-              <label className="text-xs font-semibold text-slate-600">Badge</label>
-              <select value={form.badge} onChange={(e) => { const v = e.target.value; set("badge", v); set("badgeColor", v === "Hot Deal" ? "bg-red-500 text-white" : v === "Best Seller" ? "bg-yellow-400 text-slate-900" : v === "Sale" ? "bg-yellow-400 text-slate-900" : v === "New" ? "bg-blue-600 text-white" : v === "Popular" ? "bg-blue-600 text-white" : ""); }} className={inputCls("badge")}>
+              <label className="text-[10px] font-bold uppercase tracking-[0.18em] text-black/55">Badge</label>
+              <select value={form.badge} onChange={(e) => { const v = e.target.value; set("badge", v); set("badgeColor", v === "Hot Deal" ? "bg-red-500 text-white" : v === "Best Seller" ? "bg-brand text-brand-foreground" : v === "Sale" ? "bg-brand text-brand-foreground" : v === "New" ? "bg-blue-600 text-white" : v === "Popular" ? "bg-blue-600 text-white" : ""); }} className={inputCls("badge")}>
                 <option value="">None</option>
                 <option value="Hot Deal">Hot Deal</option>
                 <option value="Best Seller">Best Seller</option>
@@ -200,12 +200,12 @@ export default function ProductNewPage() {
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-1">
-              <label className="text-xs font-semibold text-slate-600">Rating</label>
+              <label className="text-[10px] font-bold uppercase tracking-[0.18em] text-black/55">Rating</label>
               <input type="number" min={0} max={5} step="0.1" value={form.rating} onChange={(e) => set("rating", e.target.value)} className={inputCls("rating")} />
               {errors.rating && <p className="text-xs text-red-500">{errors.rating}</p>}
             </div>
             <div className="space-y-1">
-              <label className="text-xs font-semibold text-slate-600">Reviews</label>
+              <label className="text-[10px] font-bold uppercase tracking-[0.18em] text-black/55">Reviews</label>
               <input type="number" min={0} value={form.reviews} onChange={(e) => set("reviews", e.target.value)} className={inputCls("reviews")} />
               {errors.reviews && <p className="text-xs text-red-500">{errors.reviews}</p>}
             </div>
@@ -223,8 +223,8 @@ export default function ProductNewPage() {
         </section>
 
         {/* Images */}
-        <section className="bg-white rounded-2xl border border-slate-200 p-6 space-y-4">
-          <h2 className="text-sm font-bold text-slate-700 uppercase tracking-wider">Images</h2>
+        <section className="bg-white rounded-md border border-stone-200 p-6 space-y-4">
+          <h2 className="text-[10px] font-bold uppercase tracking-[0.22em] text-black/45">Images</h2>
           <div className="space-y-2">
             {form.images.map((url, i) => (
               <div key={i} className="flex items-center gap-2">
@@ -232,10 +232,10 @@ export default function ProductNewPage() {
                   value={url}
                   onChange={(e) => { const imgs = [...form.images]; imgs[i] = e.target.value; set("images", imgs as any); }}
                   placeholder="https://…"
-                  className="flex-1 text-sm border border-slate-200 rounded-xl px-3 py-2.5 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="flex-1 h-9 text-sm border border-stone-200 rounded-md px-3 bg-white focus:outline-none focus:ring-1 focus:ring-black/40 text-black"
                 />
                 {form.images.length > 1 && (
-                  <button type="button" onClick={() => set("images", form.images.filter((_, j) => j !== i) as any)} className="flex h-9 w-9 items-center justify-center rounded-lg text-slate-400 hover:bg-red-50 hover:text-red-500 transition-colors">
+                  <button type="button" onClick={() => set("images", form.images.filter((_, j) => j !== i) as any)} className="flex h-9 w-9 items-center justify-center rounded-md text-black/40 hover:bg-red-50 hover:text-red-500 transition-colors">
                     <Trash2 className="h-4 w-4" />
                   </button>
                 )}
@@ -248,8 +248,8 @@ export default function ProductNewPage() {
         </section>
 
         {/* Specs */}
-        <section className="bg-white rounded-2xl border border-slate-200 p-6 space-y-4">
-          <h2 className="text-sm font-bold text-slate-700 uppercase tracking-wider">Specifications</h2>
+        <section className="bg-white rounded-md border border-stone-200 p-6 space-y-4">
+          <h2 className="text-[10px] font-bold uppercase tracking-[0.22em] text-black/45">Specifications</h2>
           <div className="space-y-2">
             {specs.map((spec, i) => (
               <div key={i} className="flex items-center gap-2">
@@ -263,9 +263,9 @@ export default function ProductNewPage() {
                   value={spec.value}
                   onChange={(e) => { const s = [...specs]; s[i] = { ...s[i], value: e.target.value }; setSpecs(s); }}
                   placeholder="Value (e.g. 16GB DDR4)"
-                  className="flex-1 text-sm border border-slate-200 rounded-xl px-3 py-2.5 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="flex-1 h-9 text-sm border border-stone-200 rounded-md px-3 bg-white focus:outline-none focus:ring-1 focus:ring-black/40 text-black"
                 />
-                <button type="button" onClick={() => setSpecs(specs.filter((_, j) => j !== i))} className="flex h-9 w-9 items-center justify-center rounded-lg text-slate-400 hover:bg-red-50 hover:text-red-500 transition-colors">
+                <button type="button" onClick={() => setSpecs(specs.filter((_, j) => j !== i))} className="flex h-9 w-9 items-center justify-center rounded-md text-black/40 hover:bg-red-50 hover:text-red-500 transition-colors">
                   <Trash2 className="h-4 w-4" />
                 </button>
               </div>
@@ -276,11 +276,11 @@ export default function ProductNewPage() {
           </div>
         </section>
 
-        <section className="bg-white rounded-2xl border border-slate-200 p-6 space-y-4">
-          <h2 className="text-sm font-bold text-slate-700 uppercase tracking-wider">Related Products & SEO</h2>
+        <section className="bg-white rounded-md border border-stone-200 p-6 space-y-4">
+          <h2 className="text-[10px] font-bold uppercase tracking-[0.22em] text-black/45">Related Products & SEO</h2>
 
           <div className="space-y-1">
-            <label className="text-xs font-semibold text-slate-600">Related product SKUs</label>
+            <label className="text-[10px] font-bold uppercase tracking-[0.18em] text-black/55">Related product SKUs</label>
             <textarea
               value={form.relatedSkus}
               onChange={(e) => set("relatedSkus", e.target.value)}
@@ -292,7 +292,7 @@ export default function ProductNewPage() {
           </div>
 
           <div className="space-y-1">
-            <label className="text-xs font-semibold text-slate-600">Meta title</label>
+            <label className="text-[10px] font-bold uppercase tracking-[0.18em] text-black/55">Meta title</label>
             <input
               value={form.metaTitle}
               onChange={(e) => set("metaTitle", e.target.value)}
@@ -302,7 +302,7 @@ export default function ProductNewPage() {
           </div>
 
           <div className="space-y-1">
-            <label className="text-xs font-semibold text-slate-600">Meta description</label>
+            <label className="text-[10px] font-bold uppercase tracking-[0.18em] text-black/55">Meta description</label>
             <textarea
               value={form.metaDescription}
               onChange={(e) => set("metaDescription", e.target.value)}

@@ -11,14 +11,12 @@ import {
   type SortingState,
   type ColumnFiltersState,
   type VisibilityState,
-  type RowSelectionState,
 } from "@tanstack/react-table";
-import { Plus, Pencil, Trash2, Package, Search, MoreHorizontal, SlidersHorizontal } from "lucide-react";
+import { Plus, Pencil, Trash2, FileText, PlayCircle, Search, MoreHorizontal, SlidersHorizontal } from "lucide-react";
 import { DataTableColumnHeader } from "~/components/admin/data-table-column-header";
 import { DataTableSkeleton } from "~/components/admin/data-table";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
-import { Checkbox } from "~/components/ui/checkbox";
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
@@ -29,127 +27,94 @@ import {
 } from "~/components/ui/dropdown-menu";
 import { Input } from "~/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "~/components/ui/table";
-import { useProducts, useCategories, useDeleteProduct } from "~/lib/queries";
-import type { Product } from "~/types";
+import { useAdminPosts, useDeletePost } from "~/lib/queries";
+import { POST_CATEGORY_LABELS, type Post, type PostCategory } from "~/types";
 
 const selectCls =
   "h-9 rounded-md border border-stone-200 bg-white px-3 text-sm text-black focus:outline-none focus:ring-1 focus:ring-black/40";
 
-export default function AdminProductsPage() {
+export default function AdminPostsPage() {
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState("");
+  const [status, setStatus] = useState<"all" | "draft" | "published">("all");
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
-  const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
 
-  const { data: products = [], isLoading } = useProducts({
+  const { data: posts = [], isLoading } = useAdminPosts({
     search: search || undefined,
     category: category || undefined,
+    status,
   });
-  const { data: categories = [] } = useCategories();
-  const deleteProduct = useDeleteProduct();
+  const deletePost = useDeletePost();
 
-  const columns = useMemo<ColumnDef<Product>[]>(() => [
+  const columns = useMemo<ColumnDef<Post>[]>(() => [
     {
-      id: "select",
-      header: ({ table }) => (
-        <Checkbox
-          checked={table.getIsAllPageRowsSelected() || (table.getIsSomePageRowsSelected() && "indeterminate")}
-          onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
-          aria-label="Select all"
-        />
-      ),
-      cell: ({ row }) => (
-        <Checkbox
-          checked={row.getIsSelected()}
-          onCheckedChange={(value) => row.toggleSelected(!!value)}
-          aria-label="Select row"
-        />
-      ),
-      enableSorting: false,
-      enableHiding: false,
-    },
-    {
-      id: "product",
-      header: ({ column }) => <DataTableColumnHeader column={column} title="Product" />,
-      accessorFn: (row) => row.name,
-      cell: ({ row: { original: p } }) => (
-        <div className="flex items-center gap-3">
-          <img
-            src={p.images[0]}
-            alt=""
-            className="h-9 w-9 shrink-0 rounded-md border border-stone-200 bg-stone-50 object-contain p-1"
-          />
-          <div className="min-w-0">
-            <p className="truncate max-w-48 font-medium text-black">{p.name}</p>
-            <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-black/40">{p.brand}</p>
-          </div>
-        </div>
-      ),
-    },
-    {
-      id: "sku",
-      header: ({ column }) => <DataTableColumnHeader column={column} title="SKU" />,
-      accessorKey: "sku",
-      cell: ({ getValue }) => (
-        <span className="font-mono text-xs text-black/55">{getValue<string>()}</span>
-      ),
-    },
-    {
-      id: "category",
-      header: ({ column }) => <DataTableColumnHeader column={column} title="Category" />,
-      accessorFn: (row) => row.category.name,
-      cell: ({ getValue }) => (
-        <Badge variant="outline">{getValue<string>()}</Badge>
-      ),
-    },
-    {
-      id: "price",
-      header: ({ column }) => <DataTableColumnHeader column={column} title="Price" />,
-      accessorKey: "price",
-      cell: ({ row: { original: p } }) => (
-        <div className="tabular-nums">
-          <div className="font-semibold text-black">KES {p.price.toLocaleString()}</div>
-          {p.originalPrice && (
-            <div className="text-xs text-black/35 line-through">{p.originalPrice.toLocaleString()}</div>
-          )}
-        </div>
-      ),
-    },
-    {
-      id: "stock",
-      header: ({ column }) => <DataTableColumnHeader column={column} title="Stock" />,
-      accessorKey: "stock",
-      cell: ({ getValue }) => {
-        const stock = getValue<number>();
+      id: "title",
+      header: ({ column }) => <DataTableColumnHeader column={column} title="Title" />,
+      accessorKey: "title",
+      cell: ({ row }) => {
+        const p = row.original;
         return (
-          <Badge variant="outline" className={
-            stock === 0 ? "border-red-200 bg-red-50 text-red-600"
-            : stock <= 5 ? "border-orange-200 bg-orange-50 text-orange-600"
-            : "border-emerald-200 bg-emerald-50 text-emerald-700"
-          }>
-            {stock}
-          </Badge>
+          <div className="flex items-center gap-3">
+            {p.coverImage ? (
+              <img
+                src={p.coverImage}
+                alt=""
+                className="h-10 w-14 shrink-0 border border-stone-200 bg-stone-50 object-cover"
+              />
+            ) : (
+              <div className="flex h-10 w-14 shrink-0 items-center justify-center border border-stone-200 bg-stone-50 text-black/30">
+                <FileText className="h-4 w-4" strokeWidth={1.5} />
+              </div>
+            )}
+            <div className="min-w-0">
+              <p className="line-clamp-1 max-w-md font-medium text-black">{p.title}</p>
+              <p className="line-clamp-1 max-w-md text-xs text-black/45">{p.excerpt}</p>
+            </div>
+          </div>
         );
       },
     },
     {
-      id: "status",
-      header: ({ column }) => <DataTableColumnHeader column={column} title="Status" />,
-      accessorKey: "active",
+      id: "category",
+      header: ({ column }) => <DataTableColumnHeader column={column} title="Category" />,
+      accessorFn: (p) => POST_CATEGORY_LABELS[p.category],
+      cell: ({ getValue }) => <Badge variant="outline">{getValue<string>()}</Badge>,
+    },
+    {
+      id: "media",
+      header: "Media",
       enableSorting: false,
-      cell: ({ row: { original: p } }) => (
-        <div className="flex flex-wrap gap-1">
-          <Badge variant={p.active ? "default" : "secondary"}>
-            {p.active ? "Active" : "Draft"}
-          </Badge>
-          {p.badge && (
-            <Badge variant="outline" className="border-yellow-200 bg-yellow-50 text-yellow-700">
-              {p.badge}
+      cell: ({ row }) => (
+        <div className="flex items-center gap-1">
+          {row.original.videoUrl && (
+            <Badge variant="outline" className="border-orange-200 bg-orange-50 text-orange-700">
+              <PlayCircle className="mr-1 h-3 w-3" /> Video
             </Badge>
           )}
         </div>
+      ),
+    },
+    {
+      id: "status",
+      header: ({ column }) => <DataTableColumnHeader column={column} title="Status" />,
+      accessorKey: "status",
+      enableSorting: false,
+      cell: ({ row }) => (
+        <Badge variant={row.original.status === "published" ? "default" : "secondary"}>
+          {row.original.status === "published" ? "Published" : "Draft"}
+        </Badge>
+      ),
+    },
+    {
+      id: "updatedAt",
+      header: ({ column }) => <DataTableColumnHeader column={column} title="Updated" />,
+      accessorKey: "updatedAt",
+      cell: ({ row }) => (
+        <span className="text-sm text-black/55">
+          {new Date(row.original.updatedAt).toLocaleDateString()}
+        </span>
       ),
     },
     {
@@ -167,15 +132,20 @@ export default function AdminProductsPage() {
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
             <DropdownMenuItem asChild>
-              <Link to={`/admin/products/${p.id}/edit`}>
+              <Link to={`/admin/posts/${p.id}/edit`}>
                 <Pencil className="mr-2 h-3.5 w-3.5" /> Edit
               </Link>
             </DropdownMenuItem>
+            {p.status === "published" && (
+              <DropdownMenuItem asChild>
+                <Link to={`/blog/${p.slug}`} target="_blank">View live</Link>
+              </DropdownMenuItem>
+            )}
             <DropdownMenuSeparator />
             <DropdownMenuItem
               className="text-red-600 focus:text-red-600"
-              disabled={deleteProduct.isPending}
-              onClick={() => { if (confirm(`Delete "${p.name}"?`)) deleteProduct.mutate(p.id); }}
+              disabled={deletePost.isPending}
+              onClick={() => { if (confirm(`Delete "${p.title}"?`)) deletePost.mutate(p.id); }}
             >
               <Trash2 className="mr-2 h-3.5 w-3.5" /> Delete
             </DropdownMenuItem>
@@ -183,21 +153,19 @@ export default function AdminProductsPage() {
         </DropdownMenu>
       ),
     },
-  ], [deleteProduct]);
+  ], [deletePost]);
 
   const table = useReactTable({
-    data: products,
+    data: posts,
     columns,
-    state: { sorting, columnFilters, columnVisibility, rowSelection },
+    state: { sorting, columnFilters, columnVisibility },
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
     onColumnVisibilityChange: setColumnVisibility,
-    onRowSelectionChange: setRowSelection,
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
-    enableRowSelection: true,
     initialState: { pagination: { pageSize: 20 } },
   });
 
@@ -206,14 +174,14 @@ export default function AdminProductsPage() {
       <header className="mb-8 flex items-end justify-between gap-4 border-b border-stone-200 pb-6">
         <div>
           <p className="mb-1 text-[10px] font-bold uppercase tracking-[0.22em] text-black/40">
-            Catalogue
+            Content
           </p>
           <h1 className="font-black uppercase tracking-tight text-black" style={{ fontSize: "clamp(1.5rem, 2.4vw, 2rem)" }}>
-            Products
+            Blog Posts
           </h1>
         </div>
         <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-black/45">
-          {products.length} total
+          {posts.length} total
         </p>
       </header>
 
@@ -224,18 +192,19 @@ export default function AdminProductsPage() {
           <Input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search by name, brand or SKU…"
+            placeholder="Search title or excerpt…"
             className="pl-9"
           />
         </div>
-        <select
-          value={category}
-          onChange={(e) => setCategory(e.target.value)}
-          className={selectCls}
-        >
+        <select value={status} onChange={(e) => setStatus(e.target.value as any)} className={selectCls}>
+          <option value="all">All statuses</option>
+          <option value="published">Published</option>
+          <option value="draft">Drafts</option>
+        </select>
+        <select value={category} onChange={(e) => setCategory(e.target.value)} className={selectCls}>
           <option value="">All categories</option>
-          {categories.map((c) => (
-            <option key={c.id} value={c.slug}>{c.name}</option>
+          {(Object.entries(POST_CATEGORY_LABELS) as [PostCategory, string][]).map(([val, label]) => (
+            <option key={val} value={val}>{label}</option>
           ))}
         </select>
         <DropdownMenu>
@@ -258,15 +227,15 @@ export default function AdminProductsPage() {
           </DropdownMenuContent>
         </DropdownMenu>
         <Button asChild>
-          <Link to="/admin/products/new">
-            <Plus className="h-4 w-4" /> Add product
+          <Link to="/admin/posts/new">
+            <Plus className="h-4 w-4" /> New Post
           </Link>
         </Button>
       </div>
 
       {/* Table */}
       {isLoading ? (
-        <DataTableSkeleton rows={8} />
+        <DataTableSkeleton rows={6} />
       ) : (
         <div className="overflow-hidden rounded-md border border-stone-200 bg-white">
           <Table>
@@ -284,7 +253,7 @@ export default function AdminProductsPage() {
             <TableBody>
               {table.getRowModel().rows.length ? (
                 table.getRowModel().rows.map((row) => (
-                  <TableRow key={row.id} data-state={row.getIsSelected() && "selected"}>
+                  <TableRow key={row.id}>
                     {row.getVisibleCells().map((cell) => (
                       <TableCell key={cell.id}>
                         {flexRender(cell.column.columnDef.cell, cell.getContext())}
@@ -296,10 +265,8 @@ export default function AdminProductsPage() {
                 <TableRow>
                   <TableCell colSpan={columns.length} className="h-32 text-center">
                     <div className="flex flex-col items-center gap-2 text-black/35">
-                      <Package className="h-7 w-7" strokeWidth={1.5} />
-                      <p className="text-[11px] font-bold uppercase tracking-[0.18em]">
-                        No products found
-                      </p>
+                      <FileText className="h-7 w-7" strokeWidth={1.5} />
+                      <p className="text-[11px] font-bold uppercase tracking-[0.18em]">No posts found</p>
                     </div>
                   </TableCell>
                 </TableRow>
@@ -312,7 +279,7 @@ export default function AdminProductsPage() {
       {/* Pagination */}
       <div className="mt-4 flex items-center justify-between">
         <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-black/45">
-          {table.getFilteredSelectedRowModel().rows.length} of {table.getFilteredRowModel().rows.length} selected
+          Page {table.getState().pagination.pageIndex + 1} of {Math.max(table.getPageCount(), 1)}
         </p>
         <div className="flex items-center gap-2">
           <Button variant="outline" size="sm" onClick={() => table.previousPage()} disabled={!table.getCanPreviousPage()}>

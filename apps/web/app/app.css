@@ -5,6 +5,9 @@
     "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
   --font-display: "Inter Tight", "Inter", ui-sans-serif, system-ui, sans-serif;
 
+  --color-brand: #FAC800;
+  --color-brand-foreground: #000000;
+
   --color-background: hsl(0 0% 99%);
   --color-foreground: hsl(222 47% 6%);
   --color-card: hsl(0 0% 100%);

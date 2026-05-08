@@ -28,6 +28,19 @@ enum CatalogueStatus {
   converted
 }
 
+enum PostStatus {
+  draft
+  published
+}
+
+enum PostCategory {
+  repair
+  how_to
+  tips
+  guide
+  news
+}
+
 model User {
   id            String      @id @default(cuid())
   name          String
@@ -156,4 +169,24 @@ model PriceHistory {
   competitor String
   price      Decimal  @db.Decimal(10, 2)
   scrapedAt  DateTime @default(now())
+}
+model Post {
+  id          String       @id @default(cuid())
+  title       String
+  slug        String       @unique
+  excerpt     String
+  body        String
+  coverImage  String?
+  videoUrl    String?
+  category    PostCategory @default(how_to)
+  author      String       @default("Blacktoner Team")
+  readMinutes Int          @default(3)
+  tags        String[]     @default([])
+  status      PostStatus   @default(draft)
+  publishedAt DateTime?
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  @@index([status, publishedAt])
+  @@index([category])
 }

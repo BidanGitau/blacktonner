@@ -28,9 +28,10 @@ const COLUMNS = [
     ],
   },
   {
-    title: "Help",
+    title: "Company",
     links: [
-      { label: "Contact Us",    to: "#" },
+      { label: "About Us",      to: "/about" },
+      { label: "Contact",       to: "/about#contact" },
       { label: "Shipping",      to: "#" },
       { label: "Returns",       to: "#" },
       { label: "FAQ",           to: "#" },
@@ -63,8 +64,9 @@ export function Footer() {
           <h4 className="text-[10px] font-bold uppercase tracking-[0.25em] text-white mb-5">Contact</h4>
           <ul className="space-y-3 text-xs text-white/55">
             <li>Nairobi, Kenya</li>
-            <li><a href="tel:+254700000000" className="hover:text-white transition-colors">+254 700 000 000</a></li>
-            <li><a href="mailto:hello@blacktoner.co.ke" className="hover:text-white transition-colors">hello@blacktoner.co.ke</a></li>
+            <li><a href="tel:+254111040400" className="hover:text-white transition-colors">0111 040 400</a></li>
+            <li><a href="https://wa.me/254792792750" target="_blank" rel="noopener" className="hover:text-white transition-colors">WhatsApp · 0792 792 750</a></li>
+            <li><a href="mailto:sales@blacktonertechnologies.co.ke" className="hover:text-white transition-colors">sales@blacktonertechnologies.co.ke</a></li>
           </ul>
           <div className="flex flex-wrap gap-x-5 gap-y-2 mt-6">
             {SOCIALS.map((s) => (

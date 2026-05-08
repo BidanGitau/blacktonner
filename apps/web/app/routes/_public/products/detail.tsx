@@ -9,7 +9,7 @@ import { ProductPurchasePanel } from "~/components/product-detail/ProductPurchas
 import { ProductRecommendationSection } from "~/components/product-detail/ProductRecommendationSection";
 import { ProductStickyBar } from "~/components/product-detail/ProductStickyBar";
 import { useProduct, useProducts } from "~/lib/queries";
-import { DELIVERY_FEES } from "~/store/cart";
+import { DELIVERY_FEES, useCartStore } from "~/store/cart";
 import { useWishlistStore } from "~/store/wishlist";
 
 export const meta: MetaFunction = () => [{ title: "Product — Blacktoner" }];
@@ -29,6 +29,7 @@ export default function ProductDetailPage() {
 
   const toggle = useWishlistStore((s) => s.toggle);
   const wishlisted = useWishlistStore((s) => product ? s.has(product.id) : false);
+  const addToCart = useCartStore((s) => s.add);
 
   useEffect(() => {
     const el = addRef.current;
@@ -76,6 +77,8 @@ export default function ProductDetailPage() {
   const specs = (product.specs as { label: string; value: string }[] | null) ?? [];
 
   function handleAddToCart() {
+    if (!product || product.stock === 0) return;
+    addToCart(product, qty);
     setAdded(true);
     setTimeout(() => setAdded(false), 2000);
   }

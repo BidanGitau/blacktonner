@@ -10,6 +10,7 @@ const NAV_LINKS = [
   { label: "Cartridges",  to: "/products?category=cartridges" },
   { label: "Accessories", to: "/products?category=accessories" },
   { label: "Sale",        to: "/products?badge=Hot+Deal" },
+  { label: "About",       to: "/about" },
 ];
 
 export function Header() {
@@ -52,7 +53,7 @@ export function Header() {
 
           {/* Logo (left on desktop, centered on mobile) */}
           <Link to="/" className="shrink-0 flex items-center md:mr-10 mx-auto md:mx-0">
-            <img src="/logo.png" alt="Blacktoner" className="h-8 w-auto" />
+            <img src="/logo.png" alt="Blacktoner" className="h-10 w-10" />
           </Link>
 
           {/* Nav links (desktop) */}

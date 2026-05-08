@@ -80,7 +80,62 @@ export function ProductPurchasePanel({
         ) : null}
       </div>
 
-      <div className="mt-5 flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.2em]">
+      <div className="mt-8">
+        {[
+          { key: "description", label: "Description" },
+          { key: "specs", label: "Specifications", disabled: specs.length === 0 },
+          { key: "shipping", label: "Shipping & Returns" },
+        ].map((section, index) => {
+          if (section.disabled) return null;
+          const open = openSection === section.key;
+
+          return (
+            <div
+              key={section.key}
+              className={`border-b border-stone-200 ${index === 0 ? "border-t" : ""}`}
+            >
+              <button
+                onClick={() => onToggleSection(section.key)}
+                className="flex w-full items-center justify-between py-5 text-left"
+              >
+                <span className="text-[11px] font-bold uppercase tracking-[0.25em] text-black">
+                  {section.label}
+                </span>
+                <ChevronDown
+                  className={`h-4 w-4 text-black transition-transform ${open ? "rotate-180" : ""}`}
+                />
+              </button>
+              {open ? (
+                <div className="pb-6 text-sm leading-relaxed text-black/70">
+                  {section.key === "description" ? <p>{product.description}</p> : null}
+                  {section.key === "specs" ? (
+                    <div className="divide-y divide-stone-200">
+                      {specs.map((spec) => (
+                        <div key={spec.label} className="grid grid-cols-2 gap-4 py-2.5">
+                          <span className="text-[10px] font-bold uppercase tracking-[0.18em] text-black/45">
+                            {spec.label}
+                          </span>
+                          <span className="text-xs text-black">{spec.value}</span>
+                        </div>
+                      ))}
+                    </div>
+                  ) : null}
+                  {section.key === "shipping" ? (
+                    <ul className="space-y-2 text-xs">
+                      <li>· Same-day delivery within Nairobi for orders placed before 1pm.</li>
+                      <li>· Countrywide delivery via courier — 1 to 3 business days.</li>
+                      <li>· Free delivery on orders over KES 5,000 within Nairobi.</li>
+                      <li>· 7-day returns on unopened items in original packaging.</li>
+                    </ul>
+                  ) : null}
+                </div>
+              ) : null}
+            </div>
+          );
+        })}
+      </div>
+
+      <div className="mt-8 flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.2em]">
         {product.stock > 0 ? (
           <>
             <span className="inline-block h-1.5 w-1.5 rounded-full bg-emerald-500" />
@@ -96,7 +151,7 @@ export function ProductPurchasePanel({
         )}
       </div>
 
-      <div ref={addRef} className="mt-6 flex items-stretch gap-3">
+      <div ref={addRef} className="mt-4 flex items-stretch gap-3">
         <div className="flex items-center border border-black">
           <button
             onClick={onDecreaseQty}
@@ -197,58 +252,6 @@ export function ProductPurchasePanel({
             Free Delivery On Orders Over KES 5,000
           </p>
         ) : null}
-      </div>
-
-      <div className="mt-10 border-t border-stone-200">
-        {[
-          { key: "description", label: "Description" },
-          { key: "specs", label: "Specifications", disabled: specs.length === 0 },
-          { key: "shipping", label: "Shipping & Returns" },
-        ].map((section) => {
-          if (section.disabled) return null;
-          const open = openSection === section.key;
-
-          return (
-            <div key={section.key} className="border-b border-stone-200">
-              <button
-                onClick={() => onToggleSection(section.key)}
-                className="flex w-full items-center justify-between py-5 text-left"
-              >
-                <span className="text-[11px] font-bold uppercase tracking-[0.25em] text-black">
-                  {section.label}
-                </span>
-                <ChevronDown
-                  className={`h-4 w-4 text-black transition-transform ${open ? "rotate-180" : ""}`}
-                />
-              </button>
-              {open ? (
-                <div className="pb-6 text-sm leading-relaxed text-black/70">
-                  {section.key === "description" ? <p>{product.description}</p> : null}
-                  {section.key === "specs" ? (
-                    <div className="divide-y divide-stone-200">
-                      {specs.map((spec) => (
-                        <div key={spec.label} className="grid grid-cols-2 gap-4 py-2.5">
-                          <span className="text-[10px] font-bold uppercase tracking-[0.18em] text-black/45">
-                            {spec.label}
-                          </span>
-                          <span className="text-xs text-black">{spec.value}</span>
-                        </div>
-                      ))}
-                    </div>
-                  ) : null}
-                  {section.key === "shipping" ? (
-                    <ul className="space-y-2 text-xs">
-                      <li>· Same-day delivery within Nairobi for orders placed before 1pm.</li>
-                      <li>· Countrywide delivery via courier — 1 to 3 business days.</li>
-                      <li>· Free delivery on orders over KES 5,000 within Nairobi.</li>
-                      <li>· 7-day returns on unopened items in original packaging.</li>
-                    </ul>
-                  ) : null}
-                </div>
-              ) : null}
-            </div>
-          );
-        })}
       </div>
     </div>
   );

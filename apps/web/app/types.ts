@@ -116,6 +116,35 @@ export interface CompetitorPrice {
   scrapedAt: string;
 }
 
+export type PostStatus = "draft" | "published";
+export type PostCategory = "repair" | "how_to" | "tips" | "guide" | "news";
+
+export const POST_CATEGORY_LABELS: Record<PostCategory, string> = {
+  repair: "Repair",
+  how_to: "How-To",
+  tips:   "Tips",
+  guide:  "Guide",
+  news:   "News",
+};
+
+export interface Post {
+  id: string;
+  title: string;
+  slug: string;
+  excerpt: string;
+  body: string;
+  coverImage: string | null;
+  videoUrl: string | null;
+  category: PostCategory;
+  author: string;
+  readMinutes: number;
+  tags: string[];
+  status: PostStatus;
+  publishedAt: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface PaginatedResponse<T> {
   data: T[];
   total: number;

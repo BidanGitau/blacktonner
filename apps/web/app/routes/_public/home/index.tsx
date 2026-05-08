@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import type { MetaFunction } from "react-router";
 import { AnnouncementBar } from "~/components/home/AnnouncementBar";
+import { HomeCatalogueCTA } from "~/components/home/HomeCatalogueCTA";
 import { HomeCategoriesSection } from "~/components/home/HomeCategoriesSection";
 import { HomeFeaturedSection } from "~/components/home/HomeFeaturedSection";
 import { HeroSection } from "~/components/home/HeroSection";
@@ -46,6 +47,7 @@ export default function Home() {
       />
       <HomeCategoriesSection />
       <HomeFeaturedSection featured={featured} />
+      <HomeCatalogueCTA />
       <HomeTrustSection />
     </div>
   );

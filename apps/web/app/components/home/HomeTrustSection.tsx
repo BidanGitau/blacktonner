@@ -17,7 +17,7 @@ export function HomeTrustSection() {
                 opacity: 0,
               }}
             >
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-linear-to-br from-yellow-400 to-yellow-300 text-slate-900 shadow-md shadow-yellow-200">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-brand text-brand-foreground shadow-md shadow-brand/30">
                 <Icon className="h-5 w-5" />
               </div>
               <div>

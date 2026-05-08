@@ -9,6 +9,20 @@ const prisma = new PrismaClient({ adapter: new PrismaPg(pool) });
 async function main() {
   console.log('🌱 Seeding database...');
 
+  await prisma.user.upsert({
+    where: { email: 'admin@blacktoner.co.ke' },
+    update: {},
+    create: {
+      name: 'Admin',
+      email: 'admin@blacktoner.co.ke',
+      phone: '0700000000',
+      password: 'admin123',
+      role: 'admin',
+      emailVerified: true,
+    },
+  });
+  console.log('✅ Admin user seeded');
+
   const [laptops, printers, cartridges, accessories] = await Promise.all([
     prisma.category.upsert({ where: { slug: 'laptops' }, update: {}, create: { name: 'Laptops', slug: 'laptops', description: 'Business, gaming & student laptops' } }),
     prisma.category.upsert({ where: { slug: 'printers' }, update: {}, create: { name: 'Printers', slug: 'printers', description: 'Inkjet, laser & multifunction printers' } }),

@@ -63,7 +63,7 @@ export const PRODUCTS: DummyProduct[] = [
     rating: 4.5,
     reviews: 41,
     badge: "Sale",
-    badgeColor: "bg-yellow-400 text-slate-900",
+    badgeColor: "bg-brand text-brand-foreground",
     images: ["https://placehold.co/600x600/f1f5f9/475569?text=ThinkPad+E14"],
     description:
       'ThinkPad E14 Gen 4 — AMD Ryzen 5 powered, MIL-SPEC tested, spill-resistant keyboard, and crisp 14" FHD IPS display. The go-to business laptop for professionals who demand reliability.',
@@ -92,7 +92,7 @@ export const PRODUCTS: DummyProduct[] = [
     rating: 4.9,
     reviews: 62,
     badge: "Best Seller",
-    badgeColor: "bg-yellow-400 text-slate-900",
+    badgeColor: "bg-brand text-brand-foreground",
     images: ["https://placehold.co/600x600/f1f5f9/475569?text=HP+EliteBook+840+G9"],
     description:
       "HP EliteBook 840 G9 — the executive flagship. Intel Core i7, 32GB DDR5, 1TB SSD, HP Sure View privacy screen and Wolf Security. The benchmark for enterprise laptops in Kenya.",
@@ -265,7 +265,7 @@ export const PRODUCTS: DummyProduct[] = [
     rating: 4.8,
     reviews: 124,
     badge: "Best Seller",
-    badgeColor: "bg-yellow-400 text-slate-900",
+    badgeColor: "bg-brand text-brand-foreground",
     images: ["https://placehold.co/600x600/f1f5f9/475569?text=HP+LaserJet+M404n"],
     description:
       "HP LaserJet Pro M404n — blazing 40ppm monochrome output with built-in Ethernet. 80,000-page monthly duty cycle. The office workhorse trusted by Kenyan businesses.",
@@ -346,7 +346,7 @@ export const PRODUCTS: DummyProduct[] = [
     rating: 4.8,
     reviews: 44,
     badge: "Sale",
-    badgeColor: "bg-yellow-400 text-slate-900",
+    badgeColor: "bg-brand text-brand-foreground",
     images: ["https://placehold.co/600x600/f1f5f9/475569?text=HP+Color+LJ+M479"],
     description:
       "HP Color LaserJet Pro M479fdw — all-in-one colour laser with fax, auto duplex, and Wi-Fi. 28ppm in full colour. The ideal machine for marketing and design offices.",
@@ -479,7 +479,7 @@ export const PRODUCTS: DummyProduct[] = [
     rating: 4.8,
     reviews: 317,
     badge: "Best Seller",
-    badgeColor: "bg-yellow-400 text-slate-900",
+    badgeColor: "bg-brand text-brand-foreground",
     images: ["https://placehold.co/600x600/f1f5f9/475569?text=HP+85A+Toner"],
     description:
       "HP 85A Original Black LaserJet Toner — engineered for HP LaserJet Pro P1102, M1132, M1212nf MFP. ~1,600 page yield. Consistent, sharp black prints every single time.",
@@ -631,7 +631,7 @@ export const PRODUCTS: DummyProduct[] = [
     rating: 4.7,
     reviews: 88,
     badge: "Sale",
-    badgeColor: "bg-yellow-400 text-slate-900",
+    badgeColor: "bg-brand text-brand-foreground",
     images: ["https://placehold.co/600x600/f1f5f9/475569?text=Ricoh+MPC2503+Toner"],
     description:
       "Ricoh MPC2503 Colour Toner — compatible with Ricoh MPC2003, MPC2503, MPC2011 series. Choose Black, Cyan, Magenta, or Yellow. Vivid colour output, long life.",

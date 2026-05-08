@@ -1,70 +1,61 @@
-import { useMemo, useState } from "react";
-import { Link, useNavigate } from "react-router";
+import { useState, useMemo } from "react";
+import { Link } from "react-router";
 import {
-  flexRender,
+  useReactTable,
   getCoreRowModel,
   getSortedRowModel,
+  getPaginationRowModel,
+  getFilteredRowModel,
+  flexRender,
   type ColumnDef,
-  type PaginationState,
-  type RowSelectionState,
   type SortingState,
-  useReactTable,
+  type ColumnFiltersState,
+  type VisibilityState,
 } from "@tanstack/react-table";
-import { Eye, MoreHorizontal, Search, ShoppingBag } from "lucide-react";
-
-import { DataTableCard, DataTableEmpty, DataTableSkeleton } from "~/components/admin/data-table";
+import { Search, ShoppingBag, SlidersHorizontal } from "lucide-react";
 import { DataTableColumnHeader } from "~/components/admin/data-table-column-header";
-import { DataTablePagination } from "~/components/admin/data-table-pagination";
+import { DataTableSkeleton } from "~/components/admin/data-table";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
-import { Checkbox } from "~/components/ui/checkbox";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "~/components/ui/dropdown-menu";
 import { Input } from "~/components/ui/input";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "~/components/ui/select";
+  DropdownMenu,
+  DropdownMenuCheckboxItem,
+  DropdownMenuContent,
+  DropdownMenuTrigger,
+} from "~/components/ui/dropdown-menu";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "~/components/ui/table";
 import { useAdminOrders } from "~/lib/queries";
-import { formatKES } from "~/lib/utils";
 import { ORDER_STATUS_LABELS, type Order, type OrderStatus } from "~/types";
 
-const STATUS_COLORS: Record<OrderStatus, string> = {
-  pending_confirmation: "bg-orange-50 text-orange-600",
-  confirmed: "bg-blue-50 text-blue-600",
-  out_for_delivery: "bg-purple-50 text-purple-600",
-  delivered: "bg-green-50 text-green-600",
-  cancelled: "bg-red-50 text-red-500",
+const STATUS_BADGE: Record<OrderStatus, string> = {
+  pending_confirmation: "border-orange-200 bg-orange-50 text-orange-600",
+  confirmed: "border-blue-200 bg-blue-50 text-blue-600",
+  out_for_delivery: "border-purple-200 bg-purple-50 text-purple-600",
+  delivered: "border-emerald-200 bg-emerald-50 text-emerald-700",
+  cancelled: "border-red-200 bg-red-50 text-red-600",
 };
 
+const selectCls =
+  "h-9 rounded-md border border-stone-200 bg-white px-3 text-sm text-black focus:outline-none focus:ring-1 focus:ring-black/40";
+
 export default function AdminOrdersPage() {
-  const navigate = useNavigate();
   const [status, setStatus] = useState("");
   const [search, setSearch] = useState("");
   const [from, setFrom] = useState("");
   const [to, setTo] = useState("");
+  const [page, setPage] = useState(1);
   const [sorting, setSorting] = useState<SortingState>([]);
-  const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
-  const [pagination, setPagination] = useState<PaginationState>({
-    pageIndex: 0,
-    pageSize: 20,
-  });
+  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
+  const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
 
   const { data, isLoading } = useAdminOrders({
     status: status || undefined,
     search: search || undefined,
     from: from || undefined,
     to: to || undefined,
-    page: pagination.pageIndex + 1,
-    limit: pagination.pageSize,
+    page,
+    limit: 20,
   });
 
   const orders = data?.data ?? [];
@@ -73,38 +64,13 @@ export default function AdminOrdersPage() {
 
   const columns = useMemo<ColumnDef<Order>[]>(() => [
     {
-      id: "select",
-      header: ({ table }) => (
-        <Checkbox
-          checked={
-            table.getIsAllPageRowsSelected()
-              ? true
-              : table.getIsSomePageRowsSelected()
-              ? "indeterminate"
-              : false
-          }
-          onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
-          aria-label="Select all"
-        />
-      ),
-      cell: ({ row }) => (
-        <Checkbox
-          checked={row.getIsSelected()}
-          onCheckedChange={(value) => row.toggleSelected(!!value)}
-          aria-label={`Select order ${row.original.id}`}
-        />
-      ),
-      enableSorting: false,
-      enableHiding: false,
-    },
-    {
       id: "id",
-      accessorKey: "id",
       header: ({ column }) => <DataTableColumnHeader column={column} title="Order" />,
+      accessorKey: "id",
       cell: ({ row }) => (
         <Link
           to={`/admin/orders/${row.original.id}`}
-          className="font-mono text-xs text-blue-600 hover:underline"
+          className="font-mono text-xs font-bold text-black hover:underline"
         >
           #{row.original.id.slice(-8).toUpperCase()}
         </Link>
@@ -112,222 +78,201 @@ export default function AdminOrdersPage() {
     },
     {
       id: "customer",
-      accessorFn: (row) => row.customer.name,
       header: ({ column }) => <DataTableColumnHeader column={column} title="Customer" />,
+      accessorFn: (row) => row.customer.name,
       cell: ({ row }) => (
         <div>
-          <p className="text-sm font-medium text-slate-900">{row.original.customer.name}</p>
-          <p className="text-xs text-slate-400">{row.original.phone}</p>
+          <p className="font-medium text-black">{row.original.customer.name}</p>
+          <p className="text-xs text-black/45">{row.original.phone}</p>
         </div>
       ),
     },
     {
       id: "items",
-      accessorFn: (row) => row.items.length,
       header: ({ column }) => <DataTableColumnHeader column={column} title="Items" />,
+      accessorFn: (row) => row.items.length,
       cell: ({ row }) => (
-        <span className="text-sm text-slate-600">
+        <span className="text-sm text-black/60">
           {row.original.items.length} item{row.original.items.length !== 1 ? "s" : ""}
         </span>
       ),
     },
     {
       id: "total",
-      accessorKey: "total",
       header: ({ column }) => <DataTableColumnHeader column={column} title="Total" />,
+      accessorKey: "total",
       cell: ({ row }) => (
-        <span className="text-sm font-semibold text-slate-900">
-          {formatKES(row.original.total)}
-        </span>
+        <div className="font-semibold tabular-nums text-black">
+          KES {row.original.total.toLocaleString()}
+        </div>
       ),
     },
     {
       id: "status",
-      accessorKey: "status",
       header: ({ column }) => <DataTableColumnHeader column={column} title="Status" />,
+      accessorKey: "status",
+      enableSorting: false,
       cell: ({ row }) => (
-        <Badge variant="secondary" className={STATUS_COLORS[row.original.status]}>
+        <Badge variant="outline" className={STATUS_BADGE[row.original.status]}>
           {ORDER_STATUS_LABELS[row.original.status]}
         </Badge>
       ),
     },
     {
-      id: "createdAt",
-      accessorKey: "createdAt",
+      id: "date",
       header: ({ column }) => <DataTableColumnHeader column={column} title="Date" />,
+      accessorKey: "createdAt",
       cell: ({ row }) => (
-        <span className="text-xs text-slate-400">
+        <span className="text-sm text-black/55">
           {new Date(row.original.createdAt).toLocaleDateString()}
         </span>
       ),
     },
-    {
-      id: "actions",
-      enableSorting: false,
-      header: "",
-      cell: ({ row }) => (
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" className="h-8 w-8 p-0">
-              <MoreHorizontal className="h-4 w-4" />
-              <span className="sr-only">Open menu</span>
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuItem onClick={() => navigate(`/admin/orders/${row.original.id}`)}>
-              <Eye className="mr-2 h-3.5 w-3.5" />
-              View order
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      ),
-    },
-  ], [navigate]);
+  ], []);
 
   const table = useReactTable({
     data: orders,
     columns,
-    state: { sorting, pagination, rowSelection },
+    state: { sorting, columnFilters, columnVisibility },
     onSortingChange: setSorting,
-    onPaginationChange: setPagination,
-    onRowSelectionChange: setRowSelection,
+    onColumnFiltersChange: setColumnFilters,
+    onColumnVisibilityChange: setColumnVisibility,
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
-    enableRowSelection: true,
+    getPaginationRowModel: getPaginationRowModel(),
+    getFilteredRowModel: getFilteredRowModel(),
     manualPagination: true,
     pageCount: totalPages,
   });
 
   return (
-    <div className="p-6 lg:p-8">
-      <div className="mb-6 flex items-center justify-between">
+    <div className="px-6 py-8 lg:px-10 lg:py-10">
+      <header className="mb-8 flex items-end justify-between gap-4 border-b border-stone-200 pb-6">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900">Orders</h1>
-          <p className="mt-1 text-sm text-slate-500">{total} orders total</p>
+          <p className="mb-1 text-[10px] font-bold uppercase tracking-[0.22em] text-black/40">
+            Operations
+          </p>
+          <h1 className="font-black uppercase tracking-tight text-black" style={{ fontSize: "clamp(1.5rem, 2.4vw, 2rem)" }}>
+            Orders
+          </h1>
         </div>
+        <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-black/45">
+          {total} total
+        </p>
+      </header>
+
+      {/* Toolbar */}
+      <div className="mb-4 flex flex-wrap items-center gap-2">
+        <div className="relative max-w-sm flex-1 min-w-48">
+          <Search className="absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-black/35" strokeWidth={1.8} />
+          <Input
+            value={search}
+            onChange={(e) => { setSearch(e.target.value); setPage(1); }}
+            placeholder="Search by name or phone…"
+            className="pl-9"
+          />
+        </div>
+        <select
+          value={status}
+          onChange={(e) => { setStatus(e.target.value); setPage(1); }}
+          className={selectCls}
+        >
+          <option value="">All statuses</option>
+          {(Object.entries(ORDER_STATUS_LABELS) as [OrderStatus, string][]).map(([val, label]) => (
+            <option key={val} value={val}>{label}</option>
+          ))}
+        </select>
+        <input
+          type="date"
+          value={from}
+          onChange={(e) => { setFrom(e.target.value); setPage(1); }}
+          className={selectCls}
+        />
+        <input
+          type="date"
+          value={to}
+          onChange={(e) => { setTo(e.target.value); setPage(1); }}
+          className={selectCls}
+        />
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="outline" size="sm" className="ml-auto h-9">
+              <SlidersHorizontal className="h-3.5 w-3.5" /> Columns
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            {table.getAllColumns().filter((c) => c.getCanHide()).map((col) => (
+              <DropdownMenuCheckboxItem
+                key={col.id}
+                className="capitalize"
+                checked={col.getIsVisible()}
+                onCheckedChange={(value) => col.toggleVisibility(!!value)}
+              >
+                {col.id}
+              </DropdownMenuCheckboxItem>
+            ))}
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
 
-      <DataTableCard>
-        <div className="flex flex-col gap-3 border-b border-slate-200/80 px-4 py-4">
-          <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-            <div className="relative w-full max-w-sm">
-              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
-              <Input
-                value={search}
-                onChange={(e) => {
-                  setSearch(e.target.value);
-                  setPagination((state) => ({ ...state, pageIndex: 0 }));
-                }}
-                placeholder="Filter orders..."
-                className="h-9 pl-9"
-              />
-            </div>
-            <div className="flex flex-col gap-3 sm:flex-row">
-              <Select
-                value={status || "all"}
-                onValueChange={(value) => {
-                  setStatus(value === "all" ? "" : value);
-                  setPagination((state) => ({ ...state, pageIndex: 0 }));
-                }}
-              >
-                <SelectTrigger className="h-9 w-full sm:w-[180px]">
-                  <SelectValue placeholder="All statuses" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All statuses</SelectItem>
-                  {(Object.entries(ORDER_STATUS_LABELS) as [OrderStatus, string][]).map(([val, label]) => (
-                    <SelectItem key={val} value={val}>
-                      {label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <Input
-                type="date"
-                value={from}
-                onChange={(e) => {
-                  setFrom(e.target.value);
-                  setPagination((state) => ({ ...state, pageIndex: 0 }));
-                }}
-                className="h-9 w-full sm:w-[160px]"
-              />
-              <Input
-                type="date"
-                value={to}
-                onChange={(e) => {
-                  setTo(e.target.value);
-                  setPagination((state) => ({ ...state, pageIndex: 0 }));
-                }}
-                className="h-9 w-full sm:w-[160px]"
-              />
-            </div>
-          </div>
-        </div>
-
-        {isLoading ? (
-          <DataTableSkeleton rows={8} />
-        ) : orders.length === 0 ? (
-          <DataTableEmpty
-            icon={<ShoppingBag className="h-10 w-10" />}
-            title="No orders found"
-            description="Orders that match your current filters will appear here."
-          />
-        ) : (
+      {/* Table */}
+      {isLoading ? (
+        <DataTableSkeleton rows={6} />
+      ) : (
+        <div className="overflow-hidden rounded-md border border-stone-200 bg-white">
           <Table>
-            <TableHeader className="bg-slate-50/80">
-              {table.getHeaderGroups().map((headerGroup) => (
-                <TableRow key={headerGroup.id} className="hover:bg-transparent">
-                  {headerGroup.headers.map((header) => (
-                    <TableHead
-                      key={header.id}
-                      className={
-                        header.id === "total" || header.id === "actions"
-                          ? "text-right"
-                          : undefined
-                      }
-                    >
-                      <span
-                        className={
-                          header.id === "total" || header.id === "actions"
-                            ? "flex items-center justify-end gap-1"
-                            : "flex items-center gap-1"
-                        }
-                      >
-                        {header.isPlaceholder
-                          ? null
-                          : flexRender(header.column.columnDef.header, header.getContext())}
-                      </span>
+            <TableHeader>
+              {table.getHeaderGroups().map((hg) => (
+                <TableRow key={hg.id}>
+                  {hg.headers.map((h) => (
+                    <TableHead key={h.id}>
+                      {h.isPlaceholder ? null : flexRender(h.column.columnDef.header, h.getContext())}
                     </TableHead>
                   ))}
                 </TableRow>
               ))}
             </TableHeader>
             <TableBody>
-              {table.getRowModel().rows.map((row) => (
-                <TableRow key={row.id}>
-                  {row.getVisibleCells().map((cell) => (
-                    <TableCell
-                      key={cell.id}
-                      className={
-                        cell.column.id === "total" || cell.column.id === "actions"
-                          ? "text-right"
-                          : undefined
-                      }
-                    >
-                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                    </TableCell>
-                  ))}
+              {table.getRowModel().rows.length ? (
+                table.getRowModel().rows.map((row) => (
+                  <TableRow key={row.id} data-state={row.getIsSelected() && "selected"}>
+                    {row.getVisibleCells().map((cell) => (
+                      <TableCell key={cell.id}>
+                        {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                      </TableCell>
+                    ))}
+                  </TableRow>
+                ))
+              ) : (
+                <TableRow>
+                  <TableCell colSpan={columns.length} className="h-32 text-center">
+                    <div className="flex flex-col items-center gap-2 text-black/35">
+                      <ShoppingBag className="h-7 w-7" strokeWidth={1.5} />
+                      <p className="text-[11px] font-bold uppercase tracking-[0.18em]">
+                        No orders found
+                      </p>
+                    </div>
+                  </TableCell>
                 </TableRow>
-              ))}
+              )}
             </TableBody>
           </Table>
-        )}
-      </DataTableCard>
+        </div>
+      )}
 
-      <div className="mt-4">
-        <DataTableCard className="rounded-2xl">
-          <DataTablePagination table={table} />
-        </DataTableCard>
+      {/* Pagination */}
+      <div className="mt-4 flex items-center justify-between">
+        <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-black/45">
+          Page {page} of {totalPages}
+        </p>
+        <div className="flex items-center gap-2">
+          <Button variant="outline" size="sm" onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={page === 1}>
+            Previous
+          </Button>
+          <Button variant="outline" size="sm" onClick={() => setPage((p) => Math.min(totalPages, p + 1))} disabled={page === totalPages}>
+            Next
+          </Button>
+        </div>
       </div>
     </div>
   );

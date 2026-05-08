@@ -18,7 +18,7 @@ export function StarRow({ rating, reviews, size = "sm" }: Props) {
         {STARS.map((s) => (
           <Star
             key={s}
-            className={`${icon} ${s <= filled ? "fill-yellow-400 text-yellow-400" : "fill-slate-200 text-slate-200"}`}
+            className={`${icon} ${s <= filled ? "fill-brand text-brand" : "fill-slate-200 text-slate-200"}`}
           />
         ))}
       </div>

@@ -17,39 +17,44 @@ import {
 
 interface DataTablePaginationProps<TData> {
   table: Table<TData>;
+  /** Hide the rows-per-page select (useful for server-paginated views) */
+  hidePageSize?: boolean;
 }
 
 export function DataTablePagination<TData>({
   table,
+  hidePageSize = false,
 }: DataTablePaginationProps<TData>) {
   return (
-    <div className="flex items-center justify-between px-4 py-4">
-      <div className="hidden flex-1 text-sm text-slate-500 lg:flex">
+    <div className="flex items-center justify-between px-2">
+      <div className="hidden flex-1 text-sm text-black/55 lg:flex">
         {table.getFilteredSelectedRowModel().rows.length} of{" "}
         {table.getFilteredRowModel().rows.length} row(s) selected.
       </div>
-      <div className="flex w-full items-center justify-between gap-4 lg:w-auto lg:justify-end">
-        <div className="hidden items-center gap-2 lg:flex">
-          <p className="text-sm font-medium text-slate-600">Rows per page</p>
-          <Select
-            value={`${table.getState().pagination.pageSize}`}
-            onValueChange={(value) => {
-              table.setPageSize(Number(value));
-            }}
-          >
-            <SelectTrigger className="h-8 w-[72px]">
-              <SelectValue placeholder={table.getState().pagination.pageSize} />
-            </SelectTrigger>
-            <SelectContent side="top">
-              {[10, 20, 30, 40, 50].map((pageSize) => (
-                <SelectItem key={pageSize} value={`${pageSize}`}>
-                  {pageSize}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-        <div className="text-sm font-medium text-slate-600">
+      <div className="flex w-full items-center justify-between gap-6 lg:w-auto lg:justify-end lg:gap-8">
+        {!hidePageSize && (
+          <div className="flex items-center gap-2">
+            <p className="text-sm font-medium text-black">Rows per page</p>
+            <Select
+              value={`${table.getState().pagination.pageSize}`}
+              onValueChange={(value) => {
+                table.setPageSize(Number(value));
+              }}
+            >
+              <SelectTrigger className="h-8 w-[70px]">
+                <SelectValue placeholder={table.getState().pagination.pageSize} />
+              </SelectTrigger>
+              <SelectContent side="top">
+                {[10, 20, 30, 40, 50].map((pageSize) => (
+                  <SelectItem key={pageSize} value={`${pageSize}`}>
+                    {pageSize}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        )}
+        <div className="flex w-[100px] items-center justify-center text-sm font-medium text-black">
           Page {table.getState().pagination.pageIndex + 1} of{" "}
           {Math.max(table.getPageCount(), 1)}
         </div>

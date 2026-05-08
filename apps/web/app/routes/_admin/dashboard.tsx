@@ -6,23 +6,29 @@ function StatCard({
   label,
   value,
   sub,
-  color,
 }: {
   icon: React.ElementType;
   label: string;
   value: string | number;
   sub?: string;
-  color: string;
 }) {
   return (
-    <div className="bg-white rounded-2xl border border-slate-200 p-6 flex items-start gap-4">
-      <div className={`p-3 rounded-xl ${color}`}>
-        <Icon className="h-5 w-5" />
-      </div>
-      <div>
-        <p className="text-sm text-slate-500">{label}</p>
-        <p className="text-2xl font-bold text-slate-900 mt-0.5">{value}</p>
-        {sub && <p className="text-xs text-slate-400 mt-0.5">{sub}</p>}
+    <div className="group relative overflow-hidden border border-stone-200 bg-white p-6 transition-colors hover:border-black/30">
+      <div className="flex items-start justify-between">
+        <div>
+          <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-black/40">
+            {label}
+          </p>
+          <p className="mt-2 font-black tracking-tight text-black tabular-nums" style={{ fontSize: "clamp(1.5rem, 2vw, 1.875rem)" }}>
+            {value}
+          </p>
+          {sub && (
+            <p className="mt-1 text-[10px] font-medium uppercase tracking-[0.18em] text-black/40">
+              {sub}
+            </p>
+          )}
+        </div>
+        <Icon className="h-5 w-5 text-black/30 transition-colors group-hover:text-black" strokeWidth={1.6} />
       </div>
     </div>
   );
@@ -31,50 +37,54 @@ function StatCard({
 export default function DashboardPage() {
   const { data: stats, isLoading } = useOrderStats();
 
-  if (isLoading) {
-    return (
-      <div className="p-6 lg:p-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        {Array.from({ length: 4 }).map((_, i) => (
-          <div key={i} className="bg-white rounded-2xl border border-slate-200 p-6 h-32 animate-pulse" />
-        ))}
-      </div>
-    );
-  }
-
   return (
-    <div className="p-6 lg:p-8 space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold text-slate-900">Dashboard</h1>
-        <p className="text-sm text-slate-500 mt-1">Today's overview</p>
-      </div>
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <StatCard
-          icon={ShoppingBag}
-          label="Orders Today"
-          value={stats?.ordersToday ?? 0}
-          color="bg-blue-50 text-blue-600"
-        />
-        <StatCard
-          icon={Clock}
-          label="Pending"
-          value={stats?.pending ?? 0}
-          sub="awaiting confirmation"
-          color="bg-orange-50 text-orange-500"
-        />
-        <StatCard
-          icon={TrendingUp}
-          label="Revenue"
-          value={`KES ${(stats?.revenue ?? 0).toLocaleString()}`}
-          sub="confirmed + delivered"
-          color="bg-green-50 text-green-600"
-        />
-        <StatCard
-          icon={Package}
-          label="Total Orders"
-          value={stats?.total ?? 0}
-          color="bg-slate-100 text-slate-600"
-        />
-      </div>
+    <div className="px-6 py-8 lg:px-10 lg:py-10">
+      <header className="mb-8 flex items-end justify-between gap-4 border-b border-stone-200 pb-6">
+        <div>
+          <p className="mb-1 text-[10px] font-bold uppercase tracking-[0.22em] text-black/40">
+            Overview
+          </p>
+          <h1 className="font-black uppercase tracking-tight text-black" style={{ fontSize: "clamp(1.5rem, 2.4vw, 2rem)" }}>
+            Dashboard
+          </h1>
+        </div>
+        <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-black/45">
+          {new Date().toLocaleDateString("en-KE", { weekday: "long", day: "numeric", month: "long" })}
+        </p>
+      </header>
+
+      {isLoading ? (
+        <div className="grid grid-cols-1 gap-px overflow-hidden rounded-md border border-stone-200 bg-stone-200 sm:grid-cols-2 lg:grid-cols-4">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <div key={i} className="h-32 animate-pulse bg-white" />
+          ))}
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 gap-px overflow-hidden rounded-md border border-stone-200 bg-stone-200 sm:grid-cols-2 lg:grid-cols-4">
+          <StatCard
+            icon={ShoppingBag}
+            label="Orders Today"
+            value={stats?.ordersToday ?? 0}
+          />
+          <StatCard
+            icon={Clock}
+            label="Pending"
+            value={stats?.pending ?? 0}
+            sub="Awaiting confirmation"
+          />
+          <StatCard
+            icon={TrendingUp}
+            label="Revenue"
+            value={`KES ${(stats?.revenue ?? 0).toLocaleString()}`}
+            sub="Confirmed + delivered"
+          />
+          <StatCard
+            icon={Package}
+            label="Total Orders"
+            value={stats?.total ?? 0}
+          />
+        </div>
+      )}
     </div>
   );
 }

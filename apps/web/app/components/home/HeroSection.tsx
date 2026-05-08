@@ -68,7 +68,7 @@ export function HeroSection({
 
         <div className="hidden h-full items-center justify-center px-8 lg:flex xl:px-12">
           <div
-            className="flex h-full w-full max-w-md items-center"
+            className="flex h-full w-full max-w-lg items-center"
             style={{ animation: "fade-up 0.65s ease forwards", opacity: 0 }}
           >
             {heroSlides.length > 0 ? (
@@ -80,50 +80,56 @@ export function HeroSection({
                       index === slide ? "relative opacity-100" : "pointer-events-none absolute inset-0 opacity-0"
                     }`}
                   >
-                    <div className="flex items-center gap-5">
-                      <div className="relative flex h-32 w-32 shrink-0 items-center justify-center xl:h-40 xl:w-40">
+                    <div className="flex flex-col gap-5">
+                      <div className="relative mx-auto aspect-square w-72 overflow-hidden rounded-3xl bg-linear-to-br from-stone-50 to-stone-100 p-8 ring-1 ring-black/5 xl:w-96">
+                        <span
+                          aria-hidden
+                          className="absolute inset-x-8 bottom-4 h-6 rounded-full bg-black/30 blur-2xl"
+                        />
                         <img
                           src={product.images[0]}
                           alt={product.name}
-                          className="relative z-10 h-full w-full object-contain drop-shadow-xl"
+                          className="relative z-10 h-full w-full object-contain"
+                          style={{ filter: "drop-shadow(0 24px 32px rgba(0,0,0,0.35)) drop-shadow(0 8px 14px rgba(0,0,0,0.18))" }}
                         />
+                        {(product.badge || product.originalPrice) && (
+                          <div className="absolute left-4 top-4 z-20 flex flex-col gap-1.5">
+                            {product.badge && (
+                              <span className="bg-black px-2 py-1 text-[9px] font-black uppercase tracking-[0.2em] text-white">
+                                {product.badge}
+                              </span>
+                            )}
+                            {product.originalPrice && (
+                              <span className="bg-red-500 px-2 py-1 text-[9px] font-black uppercase tracking-[0.2em] text-white">
+                                -{Math.round((1 - product.price / product.originalPrice) * 100)}%
+                              </span>
+                            )}
+                          </div>
+                        )}
                       </div>
 
-                      <div className="min-w-0 flex-1">
-                        <div className="mb-1.5 flex items-center gap-2">
-                          {product.badge ? (
-                            <span className="text-[9px] font-black uppercase tracking-[0.18em] text-black/40">
-                              {product.badge}
+                      <div className="flex items-end justify-between gap-4">
+                        <div className="min-w-0 flex-1">
+                          <p className="mb-1 text-[10px] font-black uppercase tracking-[0.22em] text-black/35">
+                            {product.brand}
+                          </p>
+                          <h3 className="line-clamp-2 text-sm font-bold leading-tight text-black">
+                            {product.name}
+                          </h3>
+                          <div className="mt-2 flex items-baseline gap-2">
+                            <span className="text-xl font-black tracking-tighter text-black">
+                              KES {product.price.toLocaleString()}
                             </span>
-                          ) : null}
-                          {product.originalPrice ? (
-                            <>
-                              <span className="h-2.5 w-px bg-black/15" />
-                              <span className="text-[9px] font-black uppercase tracking-[0.18em] text-red-500">
-                                -{Math.round((1 - product.price / product.originalPrice) * 100)}% off
+                            {product.originalPrice && (
+                              <span className="text-xs font-medium text-black/30 line-through">
+                                {product.originalPrice.toLocaleString()}
                               </span>
-                            </>
-                          ) : null}
-                        </div>
-                        <p className="mb-1 text-[10px] font-black uppercase tracking-[0.2em] text-black/30">
-                          {product.brand}
-                        </p>
-                        <h3 className="mb-2 line-clamp-2 text-sm font-bold leading-tight text-black">
-                          {product.name}
-                        </h3>
-                        <div className="mb-3 flex items-baseline gap-2">
-                          <span className="text-xl font-black tracking-tighter text-black">
-                            KES {product.price.toLocaleString()}
-                          </span>
-                          {product.originalPrice ? (
-                            <span className="text-xs font-medium text-black/30 line-through">
-                              {product.originalPrice.toLocaleString()}
-                            </span>
-                          ) : null}
+                            )}
+                          </div>
                         </div>
                         <Link
                           to={`/products/${product.slug}`}
-                          className="inline-flex items-center gap-1.5 rounded-full bg-black px-4 py-2 text-[11px] font-bold text-white transition-all hover:gap-2 hover:bg-black/85"
+                          className="inline-flex shrink-0 items-center gap-1.5 rounded-full bg-black px-4 py-2.5 text-[11px] font-bold uppercase tracking-[0.18em] text-white transition-all hover:gap-2 hover:bg-black/85"
                         >
                           View deal <ArrowRight className="h-3 w-3" />
                         </Link>

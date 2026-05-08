@@ -6,17 +6,20 @@ import {
   getFilteredRowModel,
   flexRender,
   type ColumnDef,
-  type RowSelectionState,
   type SortingState,
+  type ColumnFiltersState,
+  type VisibilityState,
+  type RowSelectionState,
 } from "@tanstack/react-table";
-import { Plus, Pencil, Trash2, Tag, X, Check, Search, MoreHorizontal } from "lucide-react";
-import { DataTableCard, DataTableEmpty, DataTableSkeleton } from "~/components/admin/data-table";
+import { Plus, Pencil, Trash2, Tag, X, Check, Search, MoreHorizontal, SlidersHorizontal } from "lucide-react";
 import { DataTableColumnHeader } from "~/components/admin/data-table-column-header";
+import { DataTableSkeleton } from "~/components/admin/data-table";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import { Checkbox } from "~/components/ui/checkbox";
 import {
   DropdownMenu,
+  DropdownMenuCheckboxItem,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
@@ -27,19 +30,15 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "~
 import { useCategories, useCreateCategory, useUpdateCategory, useDeleteCategory } from "~/lib/queries";
 import type { Category } from "~/types";
 
-interface FormState {
-  name: string;
-  slug: string;
-  description: string;
-}
-
+interface FormState { name: string; slug: string; description: string; }
 const emptyForm: FormState = { name: "", slug: "", description: "" };
 
 function toSlug(name: string) {
   return name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
 }
 
-const inputCls = "text-sm border border-slate-200 rounded-xl px-3 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500";
+const inputCls =
+  "h-9 w-full rounded-md border border-stone-200 bg-white px-3 text-sm text-black placeholder:text-black/35 focus:outline-none focus:ring-1 focus:ring-black/40";
 
 export default function CategoriesPage() {
   const { data: categories = [], isLoading } = useCategories();
@@ -50,9 +49,11 @@ export default function CategoriesPage() {
   const [adding, setAdding] = useState(false);
   const [editId, setEditId] = useState<string | null>(null);
   const [form, setForm] = useState<FormState>(emptyForm);
-  const [globalFilter, setGlobalFilter] = useState("");
   const [sorting, setSorting] = useState<SortingState>([]);
+  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
+  const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
   const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
+  const [globalFilter, setGlobalFilter] = useState("");
 
   function startEdit(cat: Category) {
     setEditId(cat.id);
@@ -60,11 +61,7 @@ export default function CategoriesPage() {
     setAdding(false);
   }
 
-  function cancel() {
-    setAdding(false);
-    setEditId(null);
-    setForm(emptyForm);
-  }
+  function cancel() { setAdding(false); setEditId(null); setForm(emptyForm); }
 
   function saveAdd() {
     if (!form.name.trim()) return;
@@ -87,13 +84,7 @@ export default function CategoriesPage() {
       id: "select",
       header: ({ table }) => (
         <Checkbox
-          checked={
-            table.getIsAllPageRowsSelected()
-              ? true
-              : table.getIsSomePageRowsSelected()
-              ? "indeterminate"
-              : false
-          }
+          checked={table.getIsAllPageRowsSelected() || (table.getIsSomePageRowsSelected() && "indeterminate")}
           onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
           aria-label="Select all"
         />
@@ -102,7 +93,7 @@ export default function CategoriesPage() {
         <Checkbox
           checked={row.getIsSelected()}
           onCheckedChange={(value) => row.toggleSelected(!!value)}
-          aria-label={`Select ${row.original.name}`}
+          aria-label="Select row"
         />
       ),
       enableSorting: false,
@@ -116,36 +107,20 @@ export default function CategoriesPage() {
         const cat = row.original;
         if (editId === cat.id) {
           return (
-            <div className="space-y-2">
+            <div className="space-y-2 py-1">
               <div className="grid grid-cols-2 gap-2">
-                <input
-                  value={form.name}
-                  onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
-                  placeholder="Name"
-                  autoFocus
-                  className={inputCls}
-                />
-                <input
-                  value={form.slug}
-                  onChange={(e) => setForm((f) => ({ ...f, slug: e.target.value }))}
-                  placeholder="slug"
-                  className={inputCls}
-                />
+                <input value={form.name} onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))} placeholder="Name" autoFocus className={inputCls} />
+                <input value={form.slug} onChange={(e) => setForm((f) => ({ ...f, slug: e.target.value }))} placeholder="slug" className={inputCls} />
               </div>
-              <input
-                value={form.description}
-                onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))}
-                placeholder="Description (optional)"
-                className={`w-full ${inputCls}`}
-              />
+              <input value={form.description} onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))} placeholder="Description (optional)" className={inputCls} />
             </div>
           );
         }
         return (
           <div>
-            <p className="font-semibold text-slate-900">{cat.name}</p>
-            <p className="text-xs text-slate-400 font-mono">{cat.slug}</p>
-            {cat.description && <p className="text-xs text-slate-500 mt-0.5">{cat.description}</p>}
+            <p className="font-medium text-black">{cat.name}</p>
+            <p className="font-mono text-[10px] uppercase tracking-[0.16em] text-black/40">{cat.slug}</p>
+            {cat.description && <p className="mt-0.5 text-xs text-black/55">{cat.description}</p>}
           </div>
         );
       },
@@ -155,59 +130,51 @@ export default function CategoriesPage() {
       header: ({ column }) => <DataTableColumnHeader column={column} title="Products" />,
       accessorFn: (row) => row._count?.products ?? 0,
       cell: ({ getValue }) => (
-        <Badge variant="secondary" className="bg-slate-100 text-slate-700 hover:bg-slate-100">
-          {getValue<number>()} products
-        </Badge>
+        <Badge variant="secondary">{getValue<number>()} products</Badge>
       ),
     },
     {
       id: "actions",
       header: "",
       enableSorting: false,
+      enableHiding: false,
       cell: ({ row }) => {
         const cat = row.original;
         if (editId === cat.id) {
           return (
-            <div className="flex gap-2 justify-end">
-              <Button
-                onClick={saveEdit}
-                disabled={update.isPending}
-                size="sm"
-                className="rounded-xl"
-              >
-                <Check className="h-3 w-3" /> Save
+            <div className="flex items-center justify-end gap-2">
+              <Button size="sm" onClick={saveEdit} disabled={update.isPending}>
+                <Check className="h-3.5 w-3.5" /> Save
               </Button>
-              <Button onClick={cancel} variant="ghost" size="sm" className="rounded-xl text-slate-500 hover:text-slate-900">
-                Cancel
+              <Button size="sm" variant="ghost" onClick={cancel}>
+                <X className="h-3.5 w-3.5" /> Cancel
               </Button>
             </div>
           );
         }
         return (
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg">
-                <MoreHorizontal className="h-4 w-4" />
-                <span className="sr-only">Open menu</span>
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-40">
-              <DropdownMenuItem onClick={() => startEdit(cat)}>
-                <Pencil className="mr-2 h-3.5 w-3.5" />
-                Edit
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem
-                className="text-red-600 focus:text-red-600"
-                onClick={() => {
-                  if (confirm(`Delete "${cat.name}"?`)) del.mutate(cat.id);
-                }}
-              >
-                <Trash2 className="mr-2 h-3.5 w-3.5" />
-                Delete
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+          <div className="flex justify-end">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="icon" className="h-8 w-8">
+                  <MoreHorizontal className="h-4 w-4" />
+                  <span className="sr-only">Open menu</span>
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem onClick={() => startEdit(cat)}>
+                  <Pencil className="mr-2 h-3.5 w-3.5" /> Edit
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem
+                  className="text-red-600 focus:text-red-600"
+                  onClick={() => { if (confirm(`Delete "${cat.name}"?`)) del.mutate(cat.id); }}
+                >
+                  <Trash2 className="mr-2 h-3.5 w-3.5" /> Delete
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
         );
       },
     },
@@ -216,10 +183,12 @@ export default function CategoriesPage() {
   const table = useReactTable({
     data: categories,
     columns,
-    state: { sorting, globalFilter, rowSelection },
+    state: { sorting, columnFilters, columnVisibility, rowSelection, globalFilter },
     onSortingChange: setSorting,
-    onGlobalFilterChange: setGlobalFilter,
+    onColumnFiltersChange: setColumnFilters,
+    onColumnVisibilityChange: setColumnVisibility,
     onRowSelectionChange: setRowSelection,
+    onGlobalFilterChange: setGlobalFilter,
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
@@ -227,117 +196,130 @@ export default function CategoriesPage() {
   });
 
   return (
-    <div className="p-6 lg:p-8 max-w-2xl">
-      <div className="flex items-center justify-between mb-6">
+    <div className="px-6 py-8 lg:px-10 lg:py-10">
+      <header className="mb-8 flex items-end justify-between gap-4 border-b border-stone-200 pb-6">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900">Categories</h1>
-          <p className="text-sm text-slate-500 mt-1">{categories.length} categories</p>
+          <p className="mb-1 text-[10px] font-bold uppercase tracking-[0.22em] text-black/40">
+            Catalogue
+          </p>
+          <h1 className="font-black uppercase tracking-tight text-black" style={{ fontSize: "clamp(1.5rem, 2.4vw, 2rem)" }}>
+            Categories
+          </h1>
         </div>
-      </div>
+        <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-black/45">
+          {categories.length} total
+        </p>
+      </header>
 
+      <div>
+      {/* Add form */}
       {adding && (
-        <div className="bg-white rounded-2xl border border-slate-200 p-5 mb-4 space-y-3">
-          <h2 className="text-sm font-bold text-slate-700">New Category</h2>
+        <div className="mb-4 space-y-3 rounded-md border border-stone-200 bg-white p-4">
+          <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-black">New Category</p>
           <div className="grid grid-cols-2 gap-3">
-            <input
-              value={form.name}
-              onChange={(e) => setForm((f) => ({ ...f, name: e.target.value, slug: toSlug(e.target.value) }))}
-              placeholder="Name"
-              autoFocus
-              className={inputCls}
-            />
-            <input
-              value={form.slug}
-              onChange={(e) => setForm((f) => ({ ...f, slug: e.target.value }))}
-              placeholder="slug"
-              className={inputCls}
-            />
+            <input value={form.name} onChange={(e) => setForm((f) => ({ ...f, name: e.target.value, slug: toSlug(e.target.value) }))} placeholder="Name" autoFocus className={inputCls} />
+            <input value={form.slug} onChange={(e) => setForm((f) => ({ ...f, slug: e.target.value }))} placeholder="slug" className={inputCls} />
           </div>
-          <input
-            value={form.description}
-            onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))}
-            placeholder="Description (optional)"
-            className={`w-full ${inputCls}`}
-          />
+          <input value={form.description} onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))} placeholder="Description (optional)" className={inputCls} />
           <div className="flex gap-2">
-            <Button
-              onClick={saveAdd}
-              disabled={create.isPending}
-              className="rounded-xl"
-            >
+            <Button size="sm" onClick={saveAdd} disabled={create.isPending}>
               <Check className="h-3.5 w-3.5" /> Save
             </Button>
-            <Button onClick={cancel} variant="ghost" className="rounded-xl text-slate-500 hover:text-slate-900">
+            <Button size="sm" variant="ghost" onClick={cancel}>
               <X className="h-3.5 w-3.5" /> Cancel
             </Button>
           </div>
         </div>
       )}
 
-      <DataTableCard>
-        <div className="flex flex-col gap-3 border-b border-slate-200/80 px-4 py-4 lg:flex-row lg:items-center lg:justify-between">
-          <div className="relative w-full max-w-sm">
-            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
-            <Input
-              value={globalFilter}
-              onChange={(e) => setGlobalFilter(e.target.value)}
-              placeholder="Filter categories..."
-              className="h-9 pl-9"
-            />
-          </div>
-          {!adding && !editId ? (
-            <Button
-              onClick={() => setAdding(true)}
-              className="h-9 rounded-lg bg-slate-900 hover:bg-slate-800"
-            >
-              <Plus className="h-4 w-4" /> Add category
-            </Button>
-          ) : null}
+      {/* Toolbar */}
+      <div className="mb-4 flex items-center gap-2">
+        <div className="relative max-w-sm flex-1">
+          <Search className="absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-black/35" strokeWidth={1.8} />
+          <Input value={globalFilter} onChange={(e) => setGlobalFilter(e.target.value)} placeholder="Filter categories…" className="pl-9" />
         </div>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="outline" size="sm" className="ml-auto h-9">
+              <SlidersHorizontal className="h-3.5 w-3.5" /> Columns
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            {table.getAllColumns().filter((c) => c.getCanHide()).map((col) => (
+              <DropdownMenuCheckboxItem
+                key={col.id}
+                className="capitalize"
+                checked={col.getIsVisible()}
+                onCheckedChange={(value) => col.toggleVisibility(!!value)}
+              >
+                {col.id}
+              </DropdownMenuCheckboxItem>
+            ))}
+          </DropdownMenuContent>
+        </DropdownMenu>
+        {!adding && !editId && (
+          <Button onClick={() => setAdding(true)}>
+            <Plus className="h-4 w-4" /> Add category
+          </Button>
+        )}
+      </div>
 
-        {isLoading ? (
-          <DataTableSkeleton rows={4} />
-        ) : table.getRowModel().rows.length === 0 ? (
-          <DataTableEmpty
-            icon={<Tag className="h-10 w-10" />}
-            title={categories.length === 0 ? "No categories yet" : "No matching categories"}
-            description={categories.length === 0 ? "Create categories to organize your product catalog." : "Try a different search term."}
-          />
-        ) : (
+      {/* Table */}
+      {isLoading ? (
+        <DataTableSkeleton rows={4} />
+      ) : (
+        <div className="overflow-hidden rounded-md border border-stone-200 bg-white">
           <Table>
-            <TableHeader className="bg-slate-50/80">
+            <TableHeader>
               {table.getHeaderGroups().map((hg) => (
-                <TableRow key={hg.id} className="hover:bg-transparent">
+                <TableRow key={hg.id}>
                   {hg.headers.map((h) => (
-                    <TableHead
-                      key={h.id}
-                      className={h.id === "actions" ? "text-right" : ""}
-                    >
-                      <span className={`flex items-center gap-1 ${h.id === "actions" ? "justify-end" : ""}`}>
-                        {h.isPlaceholder ? null : flexRender(h.column.columnDef.header, h.getContext())}
-                      </span>
+                    <TableHead key={h.id}>
+                      {h.isPlaceholder ? null : flexRender(h.column.columnDef.header, h.getContext())}
                     </TableHead>
                   ))}
                 </TableRow>
               ))}
             </TableHeader>
             <TableBody>
-              {table.getRowModel().rows.map((row) => (
-                <TableRow key={row.id} className={editId === row.original.id ? "bg-blue-50/40 hover:bg-blue-50/40" : undefined}>
-                  {row.getVisibleCells().map((cell) => (
-                    <TableCell
-                      key={cell.id}
-                      className={cell.column.id === "actions" ? "text-right" : undefined}
-                    >
-                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                    </TableCell>
-                  ))}
+              {table.getRowModel().rows.length ? (
+                table.getRowModel().rows.map((row) => (
+                  <TableRow
+                    key={row.id}
+                    data-state={row.getIsSelected() && "selected"}
+                    className={editId === row.original.id ? "bg-stone-50" : undefined}
+                  >
+                    {row.getVisibleCells().map((cell) => (
+                      <TableCell key={cell.id}>
+                        {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                      </TableCell>
+                    ))}
+                  </TableRow>
+                ))
+              ) : (
+                <TableRow>
+                  <TableCell colSpan={columns.length} className="h-32 text-center">
+                    <div className="flex flex-col items-center gap-2 text-black/35">
+                      <Tag className="h-7 w-7" strokeWidth={1.5} />
+                      <p className="text-[11px] font-bold uppercase tracking-[0.18em]">
+                        {categories.length === 0 ? "No categories yet" : "No results"}
+                      </p>
+                    </div>
+                  </TableCell>
                 </TableRow>
-              ))}
+              )}
             </TableBody>
           </Table>
-        )}
-      </DataTableCard>
+        </div>
+      )}
+
+      {/* Pagination */}
+      <div className="mt-4 flex items-center justify-between">
+        <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-black/45">
+          {table.getFilteredSelectedRowModel().rows.length} of {table.getFilteredRowModel().rows.length} selected
+        </p>
+      </div>
+      </div>
     </div>
   );
 }
