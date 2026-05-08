@@ -1,3 +1,4 @@
+import { useRef, useState } from "react";
 import type { Product } from "~/types";
 
 export function ProductGallery({
@@ -30,25 +31,12 @@ export function ProductGallery({
       ) : null}
 
       <div className={product.images.length > 1 ? "lg:col-span-1" : "lg:col-span-2"}>
-        <div className="relative aspect-square overflow-hidden bg-stone-100">
-          <img
-            src={product.images[activeImage]}
-            alt={product.name}
-            className="h-full w-full object-contain p-8"
-          />
-          <div className="absolute left-4 top-4 flex flex-col gap-1">
-            {discount ? (
-              <span className="bg-black px-2.5 py-1.5 text-[10px] font-bold uppercase tracking-[0.18em] text-white">
-                -{discount}% Off
-              </span>
-            ) : null}
-            {product.badge ? (
-              <span className="bg-white px-2.5 py-1.5 text-[10px] font-bold uppercase tracking-[0.18em] text-black">
-                {product.badge}
-              </span>
-            ) : null}
-          </div>
-        </div>
+        <ZoomImage
+          src={product.images[activeImage]}
+          alt={product.name}
+          discount={discount}
+          badge={product.badge}
+        />
 
         {product.images.length > 1 ? (
           <div className="mt-3 flex gap-2 lg:hidden">
@@ -67,5 +55,61 @@ export function ProductGallery({
         ) : null}
       </div>
     </>
+  );
+}
+
+function ZoomImage({
+  src, alt, discount, badge,
+}: {
+  src: string;
+  alt: string;
+  discount: number | null;
+  badge: string | null | undefined;
+}) {
+  const ref = useRef<HTMLDivElement>(null);
+  const [zooming, setZooming] = useState(false);
+
+  function handleMove(e: React.MouseEvent<HTMLDivElement>) {
+    const el = ref.current;
+    if (!el) return;
+    const rect = el.getBoundingClientRect();
+    const x = ((e.clientX - rect.left) / rect.width) * 100;
+    const y = ((e.clientY - rect.top) / rect.height) * 100;
+    el.style.setProperty("--zx", `${x}%`);
+    el.style.setProperty("--zy", `${y}%`);
+  }
+
+  return (
+    <div
+      ref={ref}
+      onMouseEnter={() => setZooming(true)}
+      onMouseLeave={() => setZooming(false)}
+      onMouseMove={handleMove}
+      className="group relative aspect-square cursor-zoom-in overflow-hidden bg-stone-100"
+      style={{ ["--zx" as any]: "50%", ["--zy" as any]: "50%" }}
+    >
+      <img
+        src={src}
+        alt={alt}
+        draggable={false}
+        className="h-full w-full object-contain p-8 transition-transform duration-200 ease-out will-change-transform select-none"
+        style={{
+          transformOrigin: "var(--zx) var(--zy)",
+          transform: zooming ? "scale(2)" : "scale(1)",
+        }}
+      />
+      <div className="pointer-events-none absolute left-4 top-4 flex flex-col gap-1">
+        {discount ? (
+          <span className="bg-black px-2.5 py-1.5 text-[10px] font-bold uppercase tracking-[0.18em] text-white">
+            -{discount}% Off
+          </span>
+        ) : null}
+        {badge ? (
+          <span className="bg-white px-2.5 py-1.5 text-[10px] font-bold uppercase tracking-[0.18em] text-black">
+            {badge}
+          </span>
+        ) : null}
+      </div>
+    </div>
   );
 }
