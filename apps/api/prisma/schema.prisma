@@ -1,0 +1,159 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Role {
+  customer
+  admin
+  sales
+  technician
+}
+
+enum OrderStatus {
+  pending_confirmation
+  confirmed
+  out_for_delivery
+  delivered
+  cancelled
+}
+
+enum CatalogueStatus {
+  draft
+  sent
+  downloaded
+  converted
+}
+
+model User {
+  id            String      @id @default(cuid())
+  name          String
+  email         String      @unique
+  phone         String
+  password      String
+  role          Role        @default(customer)
+  emailVerified Boolean     @default(false)
+  lastLogin     DateTime?
+  orders        Order[]
+  catalogues    Catalogue[]
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+}
+
+model Category {
+  id          String    @id @default(cuid())
+  name        String
+  slug        String    @unique
+  description String?
+  products    Product[]
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+model Product {
+  id              String              @id @default(cuid())
+  name            String
+  slug            String              @unique
+  sku             String              @unique
+  description     String
+  price           Decimal             @db.Decimal(10, 2)
+  originalPrice   Decimal?            @db.Decimal(10, 2)
+  costPrice       Decimal             @db.Decimal(10, 2)
+  stock           Int                 @default(0)
+  images          String[]
+  brand           String
+  featured        Boolean             @default(false)
+  active          Boolean             @default(true)
+  badge           String?
+  badgeColor      String?
+  rating          Float               @default(0)
+  reviews         Int                 @default(0)
+  relatedSkus     String[]
+  specs           Json?
+  metaTitle       String?
+  metaDescription String?
+  category        Category            @relation(fields: [categoryId], references: [id])
+  categoryId      String
+  orderItems      OrderItem[]
+  catalogueItems  CatalogueItem[]
+  prices          CompetitorPrice[]
+  priceHistory    PriceHistory[]
+  createdAt       DateTime            @default(now())
+  updatedAt       DateTime            @updatedAt
+}
+
+model Order {
+  id              String      @id @default(cuid())
+  customer        User        @relation(fields: [customerId], references: [id])
+  customerId      String
+  items           OrderItem[]
+  status          OrderStatus @default(pending_confirmation)
+  deliveryAddress String
+  deliveryZone    String
+  deliveryFee     Decimal     @db.Decimal(10, 2)
+  subtotal        Decimal     @db.Decimal(10, 2)
+  total           Decimal     @db.Decimal(10, 2)
+  phone           String
+  otpVerified     Boolean     @default(false)
+  notes           String?
+  confirmedAt     DateTime?
+  deliveredAt     DateTime?
+  cancelledAt     DateTime?
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+}
+
+model OrderItem {
+  id        String  @id @default(cuid())
+  order     Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  orderId   String
+  product   Product @relation(fields: [productId], references: [id])
+  productId String
+  quantity  Int
+  unitPrice Decimal @db.Decimal(10, 2)
+  total     Decimal @db.Decimal(10, 2)
+}
+
+model Catalogue {
+  id          String          @id @default(cuid())
+  user        User            @relation(fields: [userId], references: [id])
+  userId      String
+  name        String
+  projectName String?
+  status      CatalogueStatus @default(draft)
+  items       CatalogueItem[]
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+}
+
+model CatalogueItem {
+  id          String    @id @default(cuid())
+  catalogue   Catalogue @relation(fields: [catalogueId], references: [id], onDelete: Cascade)
+  catalogueId String
+  product     Product   @relation(fields: [productId], references: [id])
+  productId   String
+  quantity    Int       @default(1)
+  notes       String?
+}
+
+model CompetitorPrice {
+  id         String   @id @default(cuid())
+  product    Product  @relation(fields: [productId], references: [id])
+  productId  String
+  competitor String
+  price      Decimal  @db.Decimal(10, 2)
+  url        String?
+  scrapedAt  DateTime @default(now())
+}
+
+model PriceHistory {
+  id         String   @id @default(cuid())
+  product    Product  @relation(fields: [productId], references: [id])
+  productId  String
+  competitor String
+  price      Decimal  @db.Decimal(10, 2)
+  scrapedAt  DateTime @default(now())
+}

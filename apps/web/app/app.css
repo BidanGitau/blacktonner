@@ -1,0 +1,83 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif,
+    "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+  --font-display: "Inter Tight", "Inter", ui-sans-serif, system-ui, sans-serif;
+
+  --color-background: hsl(0 0% 99%);
+  --color-foreground: hsl(222 47% 6%);
+  --color-card: hsl(0 0% 100%);
+  --color-card-foreground: hsl(222 47% 6%);
+  --color-primary: hsl(224 76% 48%);
+  --color-primary-foreground: hsl(0 0% 100%);
+  --color-secondary: hsl(220 14% 96%);
+  --color-secondary-foreground: hsl(222 47% 11%);
+  --color-muted: hsl(220 14% 96%);
+  --color-muted-foreground: hsl(220 9% 46%);
+  --color-accent: hsl(45 96% 53%);
+  --color-accent-foreground: hsl(222 47% 6%);
+  --color-destructive: hsl(0 72% 51%);
+  --color-destructive-foreground: hsl(0 0% 100%);
+  --color-border: hsl(220 13% 91%);
+  --color-input: hsl(220 13% 91%);
+  --color-ring: hsl(224 76% 48%);
+  --radius: 0.75rem;
+
+  --animate-fade-up: fade-up 0.5s ease forwards;
+  --animate-fade-in: fade-in 0.4s ease forwards;
+  --animate-slide-in: slide-in 0.4s ease forwards;
+}
+
+@keyframes fade-up {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fade-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes slide-in {
+  from { opacity: 0; transform: translateX(-12px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+html, body {
+  background-color: var(--color-background);
+  color: var(--color-foreground);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  font-feature-settings: "ss01", "cv11", "kern";
+  letter-spacing: -0.005em;
+}
+
+*,
+*::before,
+*::after {
+  font-family: inherit;
+}
+
+input,
+textarea,
+select,
+button,
+optgroup {
+  font-family: var(--font-sans);
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-display);
+  letter-spacing: -0.02em;
+}
+
+* {
+  scroll-behavior: smooth;
+}
+
+@keyframes hero-progress {
+  from { width: 0%; }
+  to   { width: 100%; }
+}
