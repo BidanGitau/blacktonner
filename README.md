@@ -2,6 +2,14 @@
 
 Blacktoner is a full-stack ecommerce and admin platform for selling toner, printers, laptops, accessories, and related office tech. The repo is organized as a JavaScript monorepo with a React Router storefront and admin dashboard on the frontend, plus a NestJS + Prisma API backed by PostgreSQL.
 
+## Deployment stack
+
+This project is set up to work with:
+
+- React Router web app deployed on Vercel
+- NestJS API deployed on Railway
+- PostgreSQL hosted on Neon
+
 ## What is in the project
 
 - Public storefront for browsing products, categories, blog posts, cart, checkout, catalogue requests, and order confirmation.
@@ -50,6 +58,7 @@ Create an env file for the API at `apps/api/.env`:
 ```env
 DATABASE_URL="postgresql://postgres:postgres@localhost:5432/blacktoner?schema=public"
 PORT=3001
+FRONTEND_URL=http://localhost:5173
 ```
 
 Optional frontend env file at `apps/web/.env`:
@@ -62,6 +71,7 @@ Notes:
 
 - `VITE_API_URL` is optional for local development because the Vite dev server already proxies `/api` to `http://localhost:3001`.
 - `PORT` defaults to `3001` if it is not set.
+- `FRONTEND_URL` controls allowed CORS origins for the API. You can provide multiple origins as a comma-separated list.
 
 ### 3. Create the database
 
@@ -217,8 +227,46 @@ Build the API:
 npm run build:api
 ```
 
+## Production deployment
+
+### Vercel web app
+
+Set this environment variable in Vercel:
+
+```env
+VITE_API_URL=https://your-railway-api.up.railway.app/api
+```
+
+### Railway API
+
+Set these environment variables in Railway:
+
+```env
+DATABASE_URL=postgresql://USER:PASSWORD@HOST/DB?sslmode=require
+PORT=3001
+FRONTEND_URL=https://your-vercel-app.vercel.app
+```
+
+If you use a custom domain on Vercel, set `FRONTEND_URL` to that domain instead. For preview and production domains, you can use a comma-separated value such as:
+
+```env
+FRONTEND_URL=https://your-app.vercel.app,https://your-custom-domain.com
+```
+
+### Neon database
+
+- Create a Neon project and database.
+- Copy the Neon connection string into `DATABASE_URL` on Railway.
+- Run Prisma migrations against the Neon database before first use.
+
+Typical flow:
+
+```bash
+npm run prisma:migrate --workspace=apps/api
+```
+
 ## Notes
 
 - The web app uses SSR with React Router.
-- The API enables CORS for `http://localhost:5173`.
+- The API uses `FRONTEND_URL` for CORS and falls back to `http://localhost:5173` locally.
 - The repo currently includes a starter `apps/web/README.md` from the original React Router template; the root README is the main project guide.
