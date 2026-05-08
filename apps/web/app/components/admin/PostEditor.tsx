@@ -4,6 +4,7 @@ import { ArrowLeft, Loader2, Save, Trash2 } from "lucide-react";
 
 import { POST_CATEGORY_LABELS, type Post, type PostCategory, type PostStatus } from "~/types";
 import { isDirectVideo, videoEmbedUrl } from "~/lib/video";
+import { RichTextEditor } from "./RichTextEditor";
 
 function toSlug(title: string) {
   return title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
@@ -200,14 +201,11 @@ export function PostEditor({
 
             <div>
               <label className={labelCls}>Body *</label>
-              <textarea
+              <RichTextEditor
                 value={form.body}
-                onChange={(e) => set("body", e.target.value)}
-                rows={20}
-                placeholder={"Write the article here.\n\nLine breaks become paragraph breaks. Plain text — no markdown needed."}
-                className={`mt-1.5 w-full resize-y border bg-white p-3 font-mono text-sm leading-relaxed text-black placeholder:text-black/35 focus:outline-none focus:ring-1 focus:ring-black/40 ${
-                  errors.body ? "border-red-400" : "border-stone-200"
-                }`}
+                onChange={(html) => set("body", html)}
+                placeholder="Write the article here. Use the toolbar for headings, lists, links, and more."
+                hasError={!!errors.body}
               />
               {errors.body && <p className="mt-1 text-[10px] font-bold uppercase tracking-[0.18em] text-red-500">{errors.body}</p>}
             </div>

@@ -1,5 +1,5 @@
 import { Outlet, Link, NavLink, useNavigate, Navigate } from "react-router";
-import { LayoutDashboard, ShoppingBag, Package, Tag, DollarSign, Bot, LogOut, ExternalLink } from "lucide-react";
+import { LayoutDashboard, ShoppingBag, Package, Tag, DollarSign, Bot, FileText, LogOut, ExternalLink } from "lucide-react";
 import { cn } from "~/lib/utils";
 import { useAuthStore } from "~/store/auth";
 
@@ -8,6 +8,7 @@ const NAV = [
   { to: "/admin/orders", label: "Orders", icon: ShoppingBag },
   { to: "/admin/products", label: "Products", icon: Package },
   { to: "/admin/categories", label: "Categories", icon: Tag },
+  { to: "/admin/posts", label: "Blog", icon: FileText },
   { to: "/admin/prices", label: "Competitor Prices", icon: DollarSign },
   { to: "/admin/scraper", label: "Scraper", icon: Bot },
 ];

@@ -13,7 +13,7 @@ import {
   type VisibilityState,
   type RowSelectionState,
 } from "@tanstack/react-table";
-import { Plus, Pencil, Trash2, Package, Search, MoreHorizontal, SlidersHorizontal } from "lucide-react";
+import { Plus, Pencil, Trash2, Package, Search, MoreHorizontal, SlidersHorizontal, EyeOff, Eye } from "lucide-react";
 import { DataTableColumnHeader } from "~/components/admin/data-table-column-header";
 import { DataTableSkeleton } from "~/components/admin/data-table";
 import { Badge } from "~/components/ui/badge";
@@ -29,7 +29,7 @@ import {
 } from "~/components/ui/dropdown-menu";
 import { Input } from "~/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "~/components/ui/table";
-import { useProducts, useCategories, useDeleteProduct } from "~/lib/queries";
+import { useProducts, useCategories, useDeleteProduct, useUpdateProduct } from "~/lib/queries";
 import type { Product } from "~/types";
 
 const selectCls =
@@ -49,6 +49,7 @@ export default function AdminProductsPage() {
   });
   const { data: categories = [] } = useCategories();
   const deleteProduct = useDeleteProduct();
+  const updateProduct = useUpdateProduct();
 
   const columns = useMemo<ColumnDef<Product>[]>(() => [
     {
@@ -171,6 +172,16 @@ export default function AdminProductsPage() {
                 <Pencil className="mr-2 h-3.5 w-3.5" /> Edit
               </Link>
             </DropdownMenuItem>
+            <DropdownMenuItem
+              disabled={updateProduct.isPending}
+              onClick={() => updateProduct.mutate({ id: p.id, active: !p.active })}
+            >
+              {p.active ? (
+                <><EyeOff className="mr-2 h-3.5 w-3.5" /> Deactivate</>
+              ) : (
+                <><Eye className="mr-2 h-3.5 w-3.5" /> Activate</>
+              )}
+            </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem
               className="text-red-600 focus:text-red-600"
@@ -183,7 +194,7 @@ export default function AdminProductsPage() {
         </DropdownMenu>
       ),
     },
-  ], [deleteProduct]);
+  ], [deleteProduct, updateProduct]);
 
   const table = useReactTable({
     data: products,

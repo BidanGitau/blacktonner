@@ -9,7 +9,7 @@ const NAV_LINKS = [
   { label: "Printers",    to: "/products?category=printers" },
   { label: "Cartridges",  to: "/products?category=cartridges" },
   { label: "Accessories", to: "/products?category=accessories" },
-  { label: "Sale",        to: "/products?badge=Hot+Deal" },
+  { label: "Tips & How-Tos", to: "/blog" },
   { label: "About",       to: "/about" },
 ];
 

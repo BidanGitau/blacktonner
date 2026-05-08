@@ -1,17 +1,43 @@
 @import "tailwindcss";
 
+/* ============================================================
+   DESIGN TOKENS — central source of truth
+   Edit values here; everything in the app picks them up.
+   - Tailwind v4 turns each token into a utility (e.g. text-ink, bg-brand)
+   - Use var(--token-name) anywhere CSS variables are accepted
+   - lib/tokens.ts mirrors these for JS access
+   ============================================================ */
 @theme {
+  /* ── Fonts ───────────────────────────────────────────────── */
   --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif,
     "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
   --font-display: "Inter Tight", "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
 
+  /* ── Brand ───────────────────────────────────────────────── */
   --color-brand: #FAC800;
   --color-brand-foreground: #000000;
+  --color-brand-dark: #C99F00;
 
+  /* ── Surfaces ────────────────────────────────────────────── */
   --color-background: hsl(0 0% 99%);
   --color-foreground: hsl(222 47% 6%);
   --color-card: hsl(0 0% 100%);
   --color-card-foreground: hsl(222 47% 6%);
+
+  /* ── Ink (text colors) ───────────────────────────────────── */
+  --color-ink: #0A0A0A;
+  --color-ink-strong: #000000;
+  --color-ink-body: rgba(0, 0, 0, 0.85);
+  --color-ink-muted: rgba(0, 0, 0, 0.55);
+  --color-ink-soft: rgba(0, 0, 0, 0.45);
+  --color-ink-faint: rgba(0, 0, 0, 0.30);
+
+  /* ── Lines / borders ─────────────────────────────────────── */
+  --color-line: #e7e5e4;
+  --color-line-strong: #d6d3d1;
+
+  /* ── Semantic palette (legacy / shadcn) ──────────────────── */
   --color-primary: hsl(224 76% 48%);
   --color-primary-foreground: hsl(0 0% 100%);
   --color-secondary: hsl(220 14% 96%);
@@ -25,13 +51,19 @@
   --color-border: hsl(220 13% 91%);
   --color-input: hsl(220 13% 91%);
   --color-ring: hsl(224 76% 48%);
+
+  /* ── Radii ───────────────────────────────────────────────── */
   --radius: 0.75rem;
 
+  /* ── Animations ──────────────────────────────────────────── */
   --animate-fade-up: fade-up 0.5s ease forwards;
   --animate-fade-in: fade-in 0.4s ease forwards;
   --animate-slide-in: slide-in 0.4s ease forwards;
 }
 
+/* ============================================================
+   KEYFRAMES
+   ============================================================ */
 @keyframes fade-up {
   from { opacity: 0; transform: translateY(20px); }
   to   { opacity: 1; transform: translateY(0); }
@@ -47,6 +79,14 @@
   to   { opacity: 1; transform: translateX(0); }
 }
 
+@keyframes hero-progress {
+  from { width: 0%; }
+  to   { width: 100%; }
+}
+
+/* ============================================================
+   BASE
+   ============================================================ */
 html, body {
   background-color: var(--color-background);
   color: var(--color-foreground);
@@ -80,7 +120,134 @@ h1, h2, h3, h4, h5, h6 {
   scroll-behavior: smooth;
 }
 
-@keyframes hero-progress {
-  from { width: 0%; }
-  to   { width: 100%; }
+/* ============================================================
+   REUSABLE PATTERNS
+   ============================================================ */
+
+/* Eyebrow / label — small, bold, uppercase, tracked.
+   Used in headers, metadata, badges, etc. across the app. */
+.eyebrow {
+  font-family: var(--font-sans);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+  font-size: 11px;
+  color: var(--color-ink-soft);
+}
+.eyebrow-xs { font-size: 10px; letter-spacing: 0.18em; }
+.eyebrow-sm { font-size: 11px; letter-spacing: 0.2em; }
+.eyebrow-md { font-size: 12px; letter-spacing: 0.22em; }
+
+/* ============================================================
+   BLOG ARTICLE TYPOGRAPHY (.prose-blog)
+   Compact, readable, consistent with the rest of the app.
+   ============================================================ */
+.prose-blog {
+  font-family: var(--font-sans);
+  color: var(--color-ink-body);
+  font-size: 0.9375rem;        /* 15px */
+  line-height: 1.6;
+  letter-spacing: -0.005em;
+  word-break: break-word;
+}
+
+.prose-blog > * + * { margin-top: 0.85em; }
+.prose-blog p { margin: 0; }
+
+.prose-blog h2,
+.prose-blog h3,
+.prose-blog h4 {
+  font-family: var(--font-display);
+  color: var(--color-ink-strong);
+  font-weight: 800;
+  letter-spacing: -0.018em;
+  line-height: 1.2;
+  margin: 1.4em 0 0.4em;
+}
+
+.prose-blog h2 { font-size: 1.25rem; }   /* 20px */
+.prose-blog h3 { font-size: 1.0625rem; } /* 17px */
+.prose-blog h4 { font-size: 0.9375rem; text-transform: uppercase; letter-spacing: 0.08em; }
+
+.prose-blog h2 + p,
+.prose-blog h3 + p,
+.prose-blog h4 + p { margin-top: 0.4em; }
+
+.prose-blog a {
+  color: var(--color-ink-strong);
+  text-decoration: underline;
+  text-decoration-color: var(--color-ink-faint);
+  text-underline-offset: 3px;
+  transition: text-decoration-color 0.15s ease;
+}
+.prose-blog a:hover { text-decoration-color: var(--color-ink-strong); }
+
+.prose-blog strong { font-weight: 700; color: var(--color-ink-strong); }
+.prose-blog em { font-style: italic; }
+
+.prose-blog ul,
+.prose-blog ol { padding-left: 1.3em; margin: 0; }
+.prose-blog ul { list-style: disc; }
+.prose-blog ol { list-style: decimal; }
+.prose-blog li { margin: 0.2em 0; }
+.prose-blog li > p { margin: 0; }
+.prose-blog li::marker { color: var(--color-ink-faint); }
+
+.prose-blog blockquote {
+  border-left: 3px solid var(--color-brand);
+  padding: 0.1em 0 0.1em 0.9em;
+  margin: 0;
+  color: var(--color-ink-muted);
+  font-style: italic;
+}
+.prose-blog blockquote p { margin: 0; }
+
+.prose-blog code {
+  font-family: var(--font-mono);
+  font-size: 0.85em;
+  background: rgba(0, 0, 0, 0.05);
+  padding: 0.1em 0.35em;
+  border-radius: 2px;
+}
+
+.prose-blog pre {
+  font-family: var(--font-mono);
+  background: #0a0a0a;
+  color: #f5f5f5;
+  padding: 0.9em 1.1em;
+  border-radius: 4px;
+  overflow-x: auto;
+  font-size: 0.85rem;
+  line-height: 1.55;
+  margin: 0.2em 0;
+}
+.prose-blog pre code {
+  background: transparent;
+  padding: 0;
+  border-radius: 0;
+  color: inherit;
+  font-size: inherit;
+}
+
+.prose-blog hr {
+  border: none;
+  border-top: 1px solid var(--color-line);
+  margin: 1.4em 0;
+}
+
+.prose-blog img {
+  max-width: 100%;
+  height: auto;
+  margin: 0.4em 0;
+  display: block;
+  border: 1px solid var(--color-line);
+}
+
+/* TipTap placeholder */
+.tiptap.ProseMirror p.is-editor-empty:first-child::before {
+  color: var(--color-ink-faint);
+  content: attr(data-placeholder);
+  float: left;
+  height: 0;
+  pointer-events: none;
 }

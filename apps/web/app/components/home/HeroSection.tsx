@@ -18,14 +18,16 @@ export function HeroSection({
   onNext: () => void;
 }) {
   return (
-    <section className="relative overflow-hidden bg-black" style={{ maxHeight: "60vh", height: "60vh" }}>
+    <section className="relative overflow-hidden bg-black lg:h-[60vh]">
+      {/* Diagonal white wedge — desktop only */}
       <div
-        className="absolute inset-y-0 right-0 w-full bg-white lg:w-[55%]"
+        className="absolute inset-y-0 right-0 hidden bg-white lg:block lg:w-[55%]"
         style={{ clipPath: "polygon(8% 0, 100% 0, 100% 100%, 0% 100%)" }}
       />
 
-      <div className="relative z-10 grid h-full grid-cols-1 items-center lg:grid-cols-2">
-        <div className="flex flex-col justify-center px-6 lg:px-12 xl:px-16">
+      <div className="relative z-10 grid grid-cols-1 lg:h-full lg:grid-cols-2 lg:items-center">
+        {/* Text column */}
+        <div className="flex flex-col justify-center px-6 py-12 sm:px-8 lg:px-12 lg:py-0 xl:px-16">
           <div style={{ animation: "fade-up 0.5s ease forwards" }}>
             <div className="mb-3 flex items-center gap-2">
               <span className="block h-px w-6 bg-white/25" />
@@ -36,7 +38,7 @@ export function HeroSection({
 
             <h1
               className="font-black uppercase leading-[0.95] tracking-tight text-white"
-              style={{ fontSize: "clamp(2rem, 4vw, 3.5rem)", fontFamily: "var(--font-display)" }}
+              style={{ fontSize: "clamp(1.75rem, 5vw, 3.5rem)", fontFamily: "var(--font-display)" }}
             >
               Shop Smart.
               <br />
@@ -47,7 +49,7 @@ export function HeroSection({
               Laptops · Printers · Toners · Accessories
             </p>
 
-            <div className="mt-5 flex items-center gap-5">
+            <div className="mt-5 flex flex-wrap items-center gap-x-5 gap-y-3">
               <Link
                 to="/products"
                 className="inline-flex items-center gap-2 bg-white px-6 py-3 text-[11px] font-bold uppercase tracking-[0.2em] text-black transition-all hover:bg-white/90"
@@ -66,9 +68,10 @@ export function HeroSection({
           </div>
         </div>
 
-        <div className="hidden h-full items-center justify-center px-8 lg:flex xl:px-12">
+        {/* Carousel column — stacked white block on mobile, embedded in wedge on lg+ */}
+        <div className="flex items-center justify-center bg-white px-6 py-12 sm:px-8 lg:bg-transparent lg:px-8 lg:py-0 xl:px-12">
           <div
-            className="flex h-full w-full max-w-lg items-center"
+            className="flex w-full max-w-lg items-center"
             style={{ animation: "fade-up 0.65s ease forwards", opacity: 0 }}
           >
             {heroSlides.length > 0 ? (
@@ -81,7 +84,7 @@ export function HeroSection({
                     }`}
                   >
                     <div className="flex flex-col gap-5">
-                      <div className="relative mx-auto aspect-square w-72 overflow-hidden rounded-3xl bg-linear-to-br from-stone-50 to-stone-100 p-8 ring-1 ring-black/5 xl:w-96">
+                      <div className="relative mx-auto aspect-square w-56 overflow-hidden rounded-3xl bg-linear-to-br from-stone-50 to-stone-100 p-6 ring-1 ring-black/5 sm:w-64 sm:p-8 lg:w-72 xl:w-80">
                         <span
                           aria-hidden
                           className="absolute inset-x-8 bottom-4 h-6 rounded-full bg-black/30 blur-2xl"
@@ -93,7 +96,7 @@ export function HeroSection({
                           style={{ filter: "drop-shadow(0 24px 32px rgba(0,0,0,0.35)) drop-shadow(0 8px 14px rgba(0,0,0,0.18))" }}
                         />
                         {(product.badge || product.originalPrice) && (
-                          <div className="absolute left-4 top-4 z-20 flex flex-col gap-1.5">
+                          <div className="absolute left-3 top-3 z-20 flex flex-col gap-1.5 sm:left-4 sm:top-4">
                             {product.badge && (
                               <span className="bg-black px-2 py-1 text-[9px] font-black uppercase tracking-[0.2em] text-white">
                                 {product.badge}
@@ -108,7 +111,7 @@ export function HeroSection({
                         )}
                       </div>
 
-                      <div className="flex items-end justify-between gap-4">
+                      <div className="flex flex-wrap items-end justify-between gap-3">
                         <div className="min-w-0 flex-1">
                           <p className="mb-1 text-[10px] font-black uppercase tracking-[0.22em] text-black/35">
                             {product.brand}
@@ -138,28 +141,33 @@ export function HeroSection({
                   </div>
                 ))}
 
-                <div className="absolute -bottom-6 left-0 right-0 flex items-center justify-between">
-                  <span className="font-mono text-[10px] font-bold text-black/30">
+                {/* Counter + nav — placed inline below the slide, never clipped */}
+                <div className="mt-5 flex items-center justify-between">
+                  <span className="font-mono text-[10px] font-bold tabular-nums text-black/40">
                     {String(slide + 1).padStart(2, "0")} / {String(heroSlides.length).padStart(2, "0")}
                   </span>
-                  <div className="flex items-center gap-0.5">
+                  <div className="flex items-center gap-1">
                     <button
+                      type="button"
+                      aria-label="Previous slide"
                       onClick={onPrev}
-                      className="flex h-7 w-7 items-center justify-center rounded-full text-black/30 transition-colors hover:bg-black/5 hover:text-black"
+                      className="flex h-8 w-8 items-center justify-center rounded-full text-black/40 transition-colors hover:bg-black/5 hover:text-black"
                     >
-                      <ChevronLeft className="h-3.5 w-3.5" />
+                      <ChevronLeft className="h-4 w-4" />
                     </button>
                     <button
+                      type="button"
+                      aria-label="Next slide"
                       onClick={onNext}
-                      className="flex h-7 w-7 items-center justify-center rounded-full text-black/30 transition-colors hover:bg-black/5 hover:text-black"
+                      className="flex h-8 w-8 items-center justify-center rounded-full text-black/40 transition-colors hover:bg-black/5 hover:text-black"
                     >
-                      <ChevronRight className="h-3.5 w-3.5" />
+                      <ChevronRight className="h-4 w-4" />
                     </button>
                   </div>
                 </div>
               </div>
             ) : (
-              <div className="h-32 w-full animate-pulse rounded-2xl bg-white/5" />
+              <div className="h-32 w-full animate-pulse rounded-2xl bg-stone-100" />
             )}
           </div>
         </div>
