@@ -1,5 +1,5 @@
 import { Controller, Get, Post, Patch, Delete, Param, Body, Query } from '@nestjs/common';
-import { ProductsService } from './products.service';
+import { ProductsService, type ImportRow } from './products.service';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
 
@@ -47,7 +47,7 @@ export class ProductsController {
   }
 
   @Post('import')
-  importCsv(@Body() body: { csv: string }) {
-    return this.productsService.importCsv(body.csv);
+  importBulk(@Body() body: { rows: ImportRow[] }) {
+    return this.productsService.importBulk(body.rows ?? []);
   }
 }

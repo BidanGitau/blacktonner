@@ -86,10 +86,25 @@ export function useDeleteProduct() {
   });
 }
 
+export interface ImportRow {
+  name?: string; sku?: string; category?: string;
+  brand?: string; slug?: string; description?: string;
+  price?: string | number; originalPrice?: string | number;
+  costPrice?: string | number; stock?: string | number;
+  images?: string; featured?: string | boolean; active?: string | boolean;
+}
+
+export interface ImportResult {
+  created: number;
+  updated: number;
+  failed: { row: number; sku?: string; error: string }[];
+}
+
 export function useImportProducts() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (csv: string) => api.post("/products/import", { csv }).then((r) => r.data),
+    mutationFn: (rows: ImportRow[]) =>
+      api.post<ImportResult>("/products/import", { rows }).then((r) => r.data),
     onSuccess: () => qc.invalidateQueries({ queryKey: productKeys.all }),
   });
 }

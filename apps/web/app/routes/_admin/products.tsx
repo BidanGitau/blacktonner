@@ -13,9 +13,10 @@ import {
   type VisibilityState,
   type RowSelectionState,
 } from "@tanstack/react-table";
-import { Plus, Pencil, Trash2, Package, Search, MoreHorizontal, SlidersHorizontal, EyeOff, Eye } from "lucide-react";
+import { Plus, Pencil, Trash2, Package, Search, MoreHorizontal, SlidersHorizontal, EyeOff, Eye, Upload } from "lucide-react";
 import { DataTableColumnHeader } from "~/components/admin/data-table-column-header";
 import { DataTableSkeleton } from "~/components/admin/data-table";
+import { ImportProductsDialog } from "~/components/admin/ImportProductsDialog";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import { Checkbox } from "~/components/ui/checkbox";
@@ -268,6 +269,11 @@ export default function AdminProductsPage() {
             ))}
           </DropdownMenuContent>
         </DropdownMenu>
+        <ImportProductsDialog>
+          <Button variant="outline" size="sm" className="h-9">
+            <Upload className="h-3.5 w-3.5" /> Import CSV
+          </Button>
+        </ImportProductsDialog>
         <Button asChild>
           <Link to="/admin/products/new">
             <Plus className="h-4 w-4" /> Add product

@@ -153,44 +153,102 @@ export class ProductsService {
     return { success: true };
   }
 
-  async importCsv(csvContent: string) {
-    const lines = csvContent.trim().split('\n');
-    const headers = lines[0].split(',').map((h) => h.trim());
-    const created: string[] = [];
-    const errors: string[] = [];
+  async importBulk(rows: ImportRow[]) {
+    const categories = await this.prisma.category.findMany({
+      select: { id: true, slug: true, name: true },
+    });
+    const categoryByKey = new Map<string, string>();
+    for (const c of categories) {
+      categoryByKey.set(c.id, c.id);
+      categoryByKey.set(c.slug.toLowerCase(), c.id);
+      categoryByKey.set(c.name.toLowerCase(), c.id);
+    }
 
-    for (let i = 1; i < lines.length; i++) {
-      const values = lines[i].split(',').map((v) => v.trim());
-      const row: Record<string, string> = {};
-      headers.forEach((h, j) => { row[h] = values[j] ?? ''; });
+    let created = 0;
+    let updated = 0;
+    const failed: { row: number; sku?: string; error: string }[] = [];
 
+    for (let i = 0; i < rows.length; i++) {
+      const row = rows[i];
+      const rowNum = i + 1;
       try {
-        const product = await this.prisma.product.create({
-          data: {
-            name: row.name,
-            slug: row.slug || row.name.toLowerCase().replace(/[^a-z0-9]+/g, '-'),
-            sku: row.sku,
-            brand: row.brand || '',
-            description: row.description || '',
-            price: Number(row.price) || 0,
-            originalPrice: row.originalPrice ? Number(row.originalPrice) : null,
-            costPrice: Number(row.costPrice) || 0,
-            stock: Number(row.stock) || 0,
-            images: [],
-            featured: false,
-            active: true,
-            relatedSkus: [],
-            specs: [],
-            categoryId: row.categoryId,
-          },
-          select: { id: true, name: true },
-        });
-        created.push(product.id);
+        if (!row.name?.trim()) throw new Error('Missing name');
+        if (!row.sku?.trim()) throw new Error('Missing sku');
+        if (!row.category?.trim()) throw new Error('Missing category');
+        if (row.price == null || isNaN(Number(row.price))) throw new Error('Invalid price');
+
+        const categoryId = categoryByKey.get(row.category.trim().toLowerCase());
+        if (!categoryId) throw new Error(`Unknown category "${row.category}"`);
+
+        const sku = row.sku.trim();
+        const name = row.name.trim();
+        const slug = (row.slug?.trim() || slugify(name));
+
+        const data = {
+          name,
+          slug,
+          sku,
+          brand: row.brand?.trim() || '',
+          description: row.description?.trim() || '',
+          price: Number(row.price),
+          originalPrice: row.originalPrice != null && row.originalPrice !== '' ? Number(row.originalPrice) : null,
+          costPrice: row.costPrice != null && row.costPrice !== '' ? Number(row.costPrice) : 0,
+          stock: row.stock != null && row.stock !== '' ? Number(row.stock) : 0,
+          images: parseList(row.images),
+          featured: parseBool(row.featured) ?? false,
+          active: parseBool(row.active) ?? true,
+          categoryId,
+        };
+
+        const existing = await this.prisma.product.findUnique({ where: { sku }, select: { id: true } });
+        if (existing) {
+          await this.prisma.product.update({ where: { sku }, data });
+          updated++;
+        } else {
+          await this.prisma.product.create({
+            data: { ...data, relatedSkus: [], specs: [] },
+          });
+          created++;
+        }
       } catch (e: any) {
-        errors.push(`Row ${i}: ${e.message}`);
+        failed.push({ row: rowNum, sku: row.sku?.trim() || undefined, error: e.message ?? String(e) });
       }
     }
 
-    return { created: created.length, errors };
+    return { created, updated, failed };
   }
+}
+
+export interface ImportRow {
+  name?: string;
+  sku?: string;
+  category?: string;
+  brand?: string;
+  slug?: string;
+  description?: string;
+  price?: string | number;
+  originalPrice?: string | number;
+  costPrice?: string | number;
+  stock?: string | number;
+  images?: string;
+  featured?: string | boolean;
+  active?: string | boolean;
+}
+
+function slugify(name: string) {
+  return name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+}
+
+function parseList(value?: string): string[] {
+  if (!value) return [];
+  return value.split(/[|;]/).map((v) => v.trim()).filter(Boolean);
+}
+
+function parseBool(value?: string | boolean): boolean | undefined {
+  if (value == null || value === '') return undefined;
+  if (typeof value === 'boolean') return value;
+  const v = value.toString().trim().toLowerCase();
+  if (['true', '1', 'yes', 'y'].includes(v)) return true;
+  if (['false', '0', 'no', 'n'].includes(v)) return false;
+  return undefined;
 }
