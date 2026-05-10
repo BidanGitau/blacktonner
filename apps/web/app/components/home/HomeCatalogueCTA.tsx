@@ -10,16 +10,16 @@ const SAMPLE = [
 
 export function HomeCatalogueCTA() {
   return (
-    <section className="bg-white px-4 py-16 lg:py-24">
+    <section className="bg-white px-4 py-12 sm:py-16 lg:py-24">
       <div className="container mx-auto lg:px-2">
-        <div className="grid grid-cols-1 items-center gap-12 lg:grid-cols-2 lg:gap-20">
+        <div className="grid grid-cols-1 items-center gap-10 lg:grid-cols-2 lg:gap-20">
           {/* Copy */}
           <div>
             <p className="mb-3 text-[10px] font-bold uppercase tracking-[0.25em] text-black/40">
               — Build Your Catalogue —
             </p>
             <h2
-              className="text-2xl font-black uppercase leading-[1.05] tracking-tight text-black md:text-4xl"
+              className="text-2xl font-black uppercase leading-[1.05] tracking-tight text-black sm:text-4xl"
               style={{ fontFamily: "var(--font-display)" }}
             >
               Plan Your Tech.
@@ -46,16 +46,16 @@ export function HomeCatalogueCTA() {
               </div>
             </div>
 
-            <div className="mt-8 flex items-center gap-6">
+            <div className="mt-8 flex flex-col items-stretch gap-3 sm:flex-row sm:items-center sm:gap-6">
               <Link
                 to="/catalogue"
-                className="inline-flex items-center gap-2 bg-black px-6 py-3 text-[11px] font-bold uppercase tracking-[0.2em] text-white transition-colors hover:bg-black/85"
+                className="inline-flex min-h-11 items-center justify-center gap-2 bg-black px-5 py-3 text-[10px] font-bold uppercase tracking-[0.16em] text-white transition-colors hover:bg-black/85 sm:px-6 sm:text-[11px] sm:tracking-[0.2em]"
               >
                 Build A Catalogue <ArrowRight className="h-3.5 w-3.5" />
               </Link>
               <Link
                 to="/products"
-                className="border-b border-black/20 pb-0.5 text-[11px] font-bold uppercase tracking-[0.2em] text-black/55 transition-colors hover:border-black hover:text-black"
+                className="self-center border-b border-black/20 pb-0.5 text-[10px] font-bold uppercase tracking-[0.16em] text-black/55 transition-colors hover:border-black hover:text-black sm:self-auto sm:text-[11px] sm:tracking-[0.2em]"
               >
                 Browse Products
               </Link>
@@ -70,7 +70,7 @@ export function HomeCatalogueCTA() {
 
             <article className="relative aspect-[1/1.3] w-full max-w-sm border border-black/10 bg-white shadow-[0_30px_60px_-30px_rgba(0,0,0,0.18)]">
               {/* Document header */}
-              <div className="flex items-start justify-between border-b border-stone-200 px-7 pt-7 pb-5">
+              <div className="flex items-start justify-between gap-3 border-b border-stone-200 px-4 pb-4 pt-5 sm:px-7 sm:pb-5 sm:pt-7">
                 <div className="flex items-center gap-3">
                   <img src="/logo.png" alt="Blacktoner" className="h-9 w-9" />
                   <div>
@@ -92,7 +92,7 @@ export function HomeCatalogueCTA() {
               </div>
 
               {/* Meta */}
-              <div className="grid grid-cols-2 gap-3 border-b border-stone-200 px-7 py-4">
+              <div className="grid grid-cols-2 gap-3 border-b border-stone-200 px-4 py-3 sm:px-7 sm:py-4">
                 <div>
                   <p className="text-[8px] font-bold uppercase tracking-[0.22em] text-black/40">Prepared For</p>
                   <p className="mt-0.5 text-[11px] font-bold text-black">Your Company</p>
@@ -106,7 +106,7 @@ export function HomeCatalogueCTA() {
               </div>
 
               {/* Line items */}
-              <div className="px-7 py-4">
+              <div className="px-4 py-3 sm:px-7 sm:py-4">
                 <div className="grid grid-cols-[1fr_auto_auto] gap-x-3 border-b border-stone-200 pb-2">
                   <p className="text-[8px] font-bold uppercase tracking-[0.2em] text-black/40">Item</p>
                   <p className="text-right text-[8px] font-bold uppercase tracking-[0.2em] text-black/40">Qty</p>
@@ -132,7 +132,7 @@ export function HomeCatalogueCTA() {
               </div>
 
               {/* Total */}
-              <div className="absolute inset-x-7 bottom-7">
+              <div className="absolute inset-x-4 bottom-5 sm:inset-x-7 sm:bottom-7">
                 <div className="flex items-baseline justify-between border-t-2 border-black pt-3">
                   <span className="text-[10px] font-bold uppercase tracking-[0.22em] text-black/45">
                     Estimated Total

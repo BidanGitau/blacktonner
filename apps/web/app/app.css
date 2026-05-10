@@ -243,6 +243,95 @@ h1, h2, h3, h4, h5, h6 {
   border: 1px solid var(--color-line);
 }
 
+/* ============================================================
+   ADMIN MOBILE SHELL
+   Shared guardrails for dense admin screens on small viewports.
+   ============================================================ */
+.admin-shell {
+  min-width: 0;
+}
+
+.admin-shell table {
+  min-width: 680px;
+}
+
+.admin-shell :where(.overflow-hidden):has(table) {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.admin-shell :where(.overflow-hidden):has(table) table {
+  width: 100%;
+}
+
+@media (max-width: 640px) {
+  .admin-shell > div {
+    padding: 1.25rem 1rem;
+  }
+
+  .admin-shell header {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 0.75rem;
+    margin-bottom: 1.25rem;
+    padding-bottom: 1rem;
+  }
+
+  .admin-shell header > p {
+    align-self: flex-start;
+  }
+
+  .admin-shell h1 {
+    font-size: 1.5rem !important;
+    line-height: 1.1;
+    white-space: normal;
+  }
+
+  .admin-shell :where(.mb-4.flex, .mb-6.flex, .mb-8.flex) {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .admin-shell :where(.max-w-sm, .min-w-48) {
+    max-width: none;
+    min-width: 0;
+    width: 100%;
+  }
+
+  .admin-shell :where(button, a, select, input) {
+    max-width: 100%;
+  }
+
+  .admin-shell :where(.ml-auto) {
+    margin-left: 0;
+  }
+
+  .admin-shell :where(form .grid, section .grid, .grid.grid-cols-2, .grid.grid-cols-3, .grid.grid-cols-12) {
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+
+  .admin-shell :where(.rounded-md.border.bg-white, section.rounded-md) {
+    border-radius: 0.375rem;
+  }
+
+  .admin-shell :where(.p-6) {
+    padding: 1rem;
+  }
+
+  .admin-shell :where(.px-5, .px-6, .px-7) {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+
+  .admin-shell :where(.flex.items-center.gap-6, .flex.items-center.gap-3, .flex.items-center.gap-2) {
+    flex-wrap: wrap;
+  }
+
+  .admin-shell :where(.w-36) {
+    width: 100%;
+  }
+}
+
 /* TipTap placeholder */
 .tiptap.ProseMirror p.is-editor-empty:first-child::before {
   color: var(--color-ink-faint);

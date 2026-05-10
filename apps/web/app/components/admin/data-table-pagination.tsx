@@ -26,15 +26,16 @@ export function DataTablePagination<TData>({
   hidePageSize = false,
 }: DataTablePaginationProps<TData>) {
   return (
-    <div className="flex items-center justify-between px-2">
+    <div className="flex items-center justify-between gap-3 rounded-md border border-stone-200 bg-white px-3 py-3 sm:px-4">
       <div className="hidden flex-1 text-sm text-black/55 lg:flex">
         {table.getFilteredSelectedRowModel().rows.length} of{" "}
         {table.getFilteredRowModel().rows.length} row(s) selected.
       </div>
-      <div className="flex w-full items-center justify-between gap-6 lg:w-auto lg:justify-end lg:gap-8">
+      <div className="flex w-full items-center justify-between gap-3 lg:w-auto lg:justify-end lg:gap-8">
         {!hidePageSize && (
           <div className="flex items-center gap-2">
-            <p className="text-sm font-medium text-black">Rows per page</p>
+            <p className="hidden text-sm font-medium text-black sm:block">Rows per page</p>
+            <p className="text-xs font-medium text-black sm:hidden">Rows</p>
             <Select
               value={`${table.getState().pagination.pageSize}`}
               onValueChange={(value) => {
@@ -54,7 +55,7 @@ export function DataTablePagination<TData>({
             </Select>
           </div>
         )}
-        <div className="flex w-[100px] items-center justify-center text-sm font-medium text-black">
+        <div className="hidden w-[100px] items-center justify-center text-sm font-medium text-black sm:flex">
           Page {table.getState().pagination.pageIndex + 1} of{" "}
           {Math.max(table.getPageCount(), 1)}
         </div>

@@ -3,7 +3,7 @@ import { Outlet, Link, NavLink, useNavigate, Navigate, useLocation } from "react
 import {
   LayoutDashboard, ShoppingBag, Package, Tag, DollarSign, Bot, FileText,
   Users, ChevronDown, BarChart3, PhoneCall, Receipt, UserCircle2,
-  Wrench, LogOut, ExternalLink, UsersRound,
+  Wrench, LogOut, ExternalLink, UsersRound, Menu, X,
 } from "lucide-react";
 import { cn } from "~/lib/utils";
 import { useAuthStore, type StaffRole } from "~/store/auth";
@@ -118,8 +118,13 @@ export default function AdminLayout() {
   const navigate = useNavigate();
   const location = useLocation();
   const { user, logout, isStaff, _hasHydrated } = useAuthStore();
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const role = (user?.role ?? "admin") as StaffRole;
+
+  useEffect(() => {
+    setMobileMenuOpen(false);
+  }, [location.pathname, location.search]);
 
   // Filter sidebar to entries this role can see.
   const visibleNav = useMemo(() => {
@@ -141,13 +146,12 @@ export default function AdminLayout() {
     return <Navigate to={ROLE_LANDING[role]} replace />;
   }
 
-  // Flatten the top 5 leaf items for the mobile bottom nav
+  // Flatten every visible leaf item for the mobile bottom nav.
+  // It scrolls horizontally on small screens so role-specific menus stay reachable.
   const mobileItems: NavItem[] = [];
   for (const entry of visibleNav) {
-    if (mobileItems.length >= 5) break;
     if (isGroup(entry)) {
       for (const child of entry.children) {
-        if (mobileItems.length >= 5) break;
         mobileItems.push(child);
       }
     } else {
@@ -226,6 +230,14 @@ export default function AdminLayout() {
       {/* Mobile top bar */}
       <header className="fixed inset-x-0 top-0 z-30 flex h-14 items-center justify-between border-b border-stone-200 bg-white px-4 lg:hidden">
         <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={() => setMobileMenuOpen((open) => !open)}
+            className="-ml-2 flex h-9 w-9 items-center justify-center text-black"
+            aria-label={mobileMenuOpen ? "Close admin menu" : "Open admin menu"}
+          >
+            {mobileMenuOpen ? <X className="h-5 w-5" strokeWidth={1.7} /> : <Menu className="h-5 w-5" strokeWidth={1.7} />}
+          </button>
           <img src="/logo.png" alt="Blacktoner" className="h-7 w-7" />
           <span className="text-[11px] font-bold uppercase tracking-[0.22em] text-black">Admin</span>
         </div>
@@ -237,8 +249,51 @@ export default function AdminLayout() {
         </button>
       </header>
 
+      {mobileMenuOpen && (
+        <div className="fixed inset-x-0 top-14 z-30 max-h-[calc(100dvh-7rem)] overflow-y-auto border-b border-stone-200 bg-white shadow-lg lg:hidden">
+          <nav className="p-3">
+            {visibleNav.map((entry) => {
+              if (isGroup(entry)) {
+                return <NavGroupItem key={entry.label} group={entry} />;
+              }
+              const Icon = entry.icon;
+              return (
+                <NavLink
+                  key={entry.to}
+                  to={entry.to}
+                  end={entry.end}
+                  className={({ isActive }) =>
+                    cn(
+                      "group relative mb-0.5 flex items-center gap-3 rounded-md px-3 py-3 text-[11px] font-bold uppercase tracking-[0.16em] transition-colors",
+                      isActive ? "bg-stone-100 text-black" : "text-black/55 hover:bg-stone-50 hover:text-black",
+                    )
+                  }
+                >
+                  <Icon className="h-4 w-4" strokeWidth={1.6} />
+                  <span>{entry.label}</span>
+                </NavLink>
+              );
+            })}
+          </nav>
+          <div className="grid grid-cols-2 border-t border-stone-200">
+            <Link
+              to="/"
+              className="flex items-center justify-center gap-2 py-3 text-[10px] font-bold uppercase tracking-[0.18em] text-black/55"
+            >
+              <ExternalLink className="h-3.5 w-3.5" strokeWidth={1.8} /> Store
+            </Link>
+            <button
+              onClick={() => { logout(); navigate("/login"); }}
+              className="flex items-center justify-center gap-2 border-l border-stone-200 py-3 text-[10px] font-bold uppercase tracking-[0.18em] text-red-500"
+            >
+              <LogOut className="h-3.5 w-3.5" strokeWidth={1.8} /> Logout
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Mobile bottom nav */}
-      <nav className="fixed inset-x-0 bottom-0 z-30 flex border-t border-stone-200 bg-white lg:hidden">
+      <nav className="fixed inset-x-0 bottom-0 z-30 flex overflow-x-auto border-t border-stone-200 bg-white lg:hidden">
         {mobileItems.map((entry) => (
           <NavLink
             key={entry.to}
@@ -246,7 +301,7 @@ export default function AdminLayout() {
             end={entry.end}
             className={({ isActive }) =>
               cn(
-                "flex flex-1 flex-col items-center gap-0.5 py-2 text-[9px] font-bold uppercase tracking-[0.15em] transition-colors",
+                "flex min-w-[76px] flex-1 flex-col items-center gap-0.5 px-2 py-2 text-[9px] font-bold uppercase tracking-[0.12em] transition-colors",
                 isActive ? "text-black" : "text-black/40 hover:text-black",
               )
             }
@@ -259,7 +314,7 @@ export default function AdminLayout() {
 
       {/* Content */}
       <div className="pb-16 lg:pb-0 lg:pl-60">
-        <main className="min-h-screen pt-14 lg:pt-0">
+        <main className="admin-shell min-h-screen pt-14 lg:pt-0">
           <Outlet />
         </main>
       </div>

@@ -51,7 +51,7 @@ export function Header() {
           scrolled ? "border-b border-stone-200" : "border-b border-transparent"
         }`}
       >
-        <div className="mx-auto flex h-16 max-w-7xl items-center px-6 lg:px-10">
+        <div className="mx-auto flex h-16 max-w-7xl items-center px-4 sm:px-6 lg:px-10">
 
           {/* Mobile menu trigger */}
           <button
@@ -63,7 +63,7 @@ export function Header() {
           </button>
 
           {/* Logo (left on desktop, centered on mobile) */}
-          <Link to="/" className="shrink-0 flex items-center md:mr-10 mx-auto md:mx-0">
+          <Link to="/" className="absolute left-1/2 -translate-x-1/2 shrink-0 flex items-center md:static md:mr-10 md:translate-x-0">
             <img src="/logo.png" alt="Blacktoner" className="h-10 w-10" />
           </Link>
 
@@ -87,7 +87,7 @@ export function Header() {
           </nav>
 
           {/* Right actions */}
-          <div className="flex items-center gap-4 md:gap-5 ml-auto">
+          <div className="ml-auto flex items-center gap-2 sm:gap-4 md:gap-5">
             <form onSubmit={handleSearch} className="hidden sm:flex items-center">
               <input
                 type="text"
@@ -143,8 +143,8 @@ export function Header() {
                   {link.label}
                 </Link>
               ))}
-              <div className="grid grid-cols-2 border-t border-stone-200">
-                <Link to="/login" className="flex items-center justify-center gap-2 py-4 text-[11px] font-bold uppercase tracking-[0.2em] text-black hover:bg-stone-50 border-l border-stone-200">
+              <div className="border-t border-stone-200">
+                <Link to="/login" className="flex items-center justify-center gap-2 py-4 text-[11px] font-bold uppercase tracking-[0.2em] text-black hover:bg-stone-50">
                   <User className="h-4 w-4" strokeWidth={1.6} /> Account
                 </Link>
               </div>

@@ -277,8 +277,8 @@ export default function AdminPostsPage() {
       )}
 
       {/* Pagination */}
-      <div className="mt-4 flex items-center justify-between">
-        <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-black/45">
+      <div className="mt-3 flex items-center justify-end gap-3 rounded-md border border-stone-200 bg-white px-3 py-3 sm:mt-4 sm:justify-between sm:px-4">
+        <p className="hidden text-[10px] font-bold uppercase tracking-[0.18em] text-black/45 sm:block">
           Page {table.getState().pagination.pageIndex + 1} of {Math.max(table.getPageCount(), 1)}
         </p>
         <div className="flex items-center gap-2">

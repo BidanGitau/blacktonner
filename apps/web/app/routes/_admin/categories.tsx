@@ -11,9 +11,10 @@ import {
   type VisibilityState,
   type RowSelectionState,
 } from "@tanstack/react-table";
-import { Plus, Pencil, Trash2, Tag, X, Check, Search, MoreHorizontal, SlidersHorizontal, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from "lucide-react";
+import { Plus, Pencil, Trash2, Tag, X, Check, Search, MoreHorizontal, SlidersHorizontal } from "lucide-react";
 import { DataTableColumnHeader } from "~/components/admin/data-table-column-header";
 import { DataTableSkeleton } from "~/components/admin/data-table";
+import { Pagination } from "~/components/admin/Pagination";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import { Checkbox } from "~/components/ui/checkbox";
@@ -50,8 +51,6 @@ export default function CategoriesPage() {
   const create = useCreateCategory();
   const update = useUpdateCategory();
   const del = useDeleteCategory();
-
-  const totalPages = Math.ceil(totalCount / pageSize) || 1;
 
   const [adding, setAdding] = useState(false);
   const [editId, setEditId] = useState<string | null>(null);
@@ -320,66 +319,14 @@ export default function CategoriesPage() {
       )}
 
       {/* Pagination */}
-      <div className="mt-4 flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-black/45">
-            {table.getFilteredSelectedRowModel().rows.length} of {totalCount} total
-          </p>
-          <div className="flex items-center gap-2">
-            <span className="text-xs text-black/55">Rows per page</span>
-            <select
-              value={pageSize}
-              onChange={(e) => { setPageSize(Number(e.target.value)); setPage(1); }}
-              className="h-8 rounded-md border border-stone-200 bg-white px-2 text-xs"
-            >
-              {[20, 50, 100].map((size) => (
-                <option key={size} value={size}>{size}</option>
-              ))}
-            </select>
-          </div>
-          <span className="text-xs text-black/55">
-            Page {page} of {totalPages}
-          </span>
-        </div>
-        <div className="flex items-center gap-1">
-          <Button
-            variant="outline"
-            size="icon"
-            className="h-8 w-8"
-            disabled={page === 1}
-            onClick={() => setPage(1)}
-          >
-            <ChevronsLeft className="h-4 w-4" />
-          </Button>
-          <Button
-            variant="outline"
-            size="icon"
-            className="h-8 w-8"
-            disabled={page === 1}
-            onClick={() => setPage((p) => Math.max(1, p - 1))}
-          >
-            <ChevronLeft className="h-4 w-4" />
-          </Button>
-          <Button
-            variant="outline"
-            size="icon"
-            className="h-8 w-8"
-            disabled={page >= totalPages}
-            onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-          >
-            <ChevronRight className="h-4 w-4" />
-          </Button>
-          <Button
-            variant="outline"
-            size="icon"
-            className="h-8 w-8"
-            disabled={page >= totalPages}
-            onClick={() => setPage(totalPages)}
-          >
-            <ChevronsRight className="h-4 w-4" />
-          </Button>
-        </div>
-      </div>
+      <Pagination
+        page={page}
+        pageSize={pageSize}
+        totalCount={totalCount}
+        onPageChange={setPage}
+        onPageSizeChange={(newSize) => { setPageSize(newSize); setPage(1); }}
+        selectedCount={table.getFilteredSelectedRowModel().rows.length}
+      />
       </div>
     </div>
   );

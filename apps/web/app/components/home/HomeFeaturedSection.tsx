@@ -6,15 +6,15 @@ import type { Product } from "~/types";
 
 export function HomeFeaturedSection({ featured }: { featured: Product[] }) {
   return (
-    <section className="border-y border-stone-200 bg-stone-50 px-4 py-16">
+    <section className="border-y border-stone-200 bg-stone-50 px-4 py-12 sm:py-16">
       <div className="container mx-auto lg:px-2">
-        <div className="mb-10 flex items-end justify-between">
+        <div className="mb-8 flex items-end justify-between sm:mb-10">
           <div>
             <p className="mb-3 text-[10px] font-bold uppercase tracking-[0.25em] text-black/40">
               — Handpicked —
             </p>
             <h2
-              className="text-2xl font-black uppercase tracking-tight text-black md:text-3xl"
+              className="text-2xl font-black uppercase tracking-tight text-black sm:text-3xl"
               style={{ fontFamily: "var(--font-display)" }}
             >
               Featured Products
@@ -27,7 +27,7 @@ export function HomeFeaturedSection({ featured }: { featured: Product[] }) {
             View All <ArrowRight className="h-3.5 w-3.5" />
           </Link>
         </div>
-        <div className="grid grid-cols-2 gap-x-6 gap-y-10 md:grid-cols-3 lg:grid-cols-4">
+        <div className="grid grid-cols-1 gap-y-8 min-[420px]:grid-cols-2 min-[420px]:gap-x-4 min-[420px]:gap-y-10 md:grid-cols-3 md:gap-x-6 lg:grid-cols-4">
           {featured.length > 0
             ? featured.map((product, index) => (
                 <ProductCard key={product.id} product={product} index={index} />

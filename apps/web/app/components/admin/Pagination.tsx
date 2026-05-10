@@ -23,15 +23,16 @@ export function Pagination({
   const totalPages = Math.ceil(totalCount / pageSize) || 1;
 
   return (
-    <div className="mt-4 flex items-center justify-between">
-      <div className="flex items-center gap-4">
+    <div className="mt-3 flex items-center justify-between gap-3 rounded-md border border-stone-200 bg-white px-3 py-3 sm:mt-4 sm:px-4">
+      <div className="flex min-w-0 items-center gap-3 sm:gap-4">
         {selectedCount > 0 && (
-          <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-black/45">
+          <p className="hidden text-[10px] font-bold uppercase tracking-[0.18em] text-black/45 sm:block">
             {selectedCount} of {totalCount} selected
           </p>
         )}
         <div className="flex items-center gap-2">
-          <span className="text-xs text-black/55">Rows per page</span>
+          <span className="hidden text-xs text-black/55 sm:inline">Rows per page</span>
+          <span className="text-xs text-black/55 sm:hidden">Rows</span>
           <select
             value={pageSize}
             onChange={(e) => { onPageSizeChange(Number(e.target.value)); onPageChange(1); }}
@@ -42,15 +43,15 @@ export function Pagination({
             ))}
           </select>
         </div>
-        <span className="text-xs text-black/55">
+        <span className="hidden text-xs text-black/55 sm:inline">
           Page {page} of {totalPages} ({totalCount} items)
         </span>
       </div>
-      <div className="flex items-center gap-1">
+      <div className="flex shrink-0 items-center gap-1">
         <Button
           variant="outline"
           size="icon"
-          className="h-8 w-8"
+          className="hidden h-8 w-8 sm:inline-flex"
           disabled={page === 1}
           onClick={() => onPageChange(1)}
         >
