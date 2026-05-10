@@ -49,9 +49,10 @@ export class ProductsService {
     search?: string;
     badge?: string;
     limit?: number;
+    page?: number;
     active?: boolean;
   } = {}) {
-    const { category, featured, search, badge, limit, active } = params;
+    const { category, featured, search, badge, limit = 50, page = 1, active } = params;
 
     const where: any = {};
     if (active !== undefined) where.active = active;
@@ -66,14 +67,24 @@ export class ProductsService {
       ];
     }
 
-    const products = await this.prisma.product.findMany({
-      where,
-      select: PRODUCT_SELECT,
-      orderBy: [{ featured: 'desc' }, { createdAt: 'desc' }],
-      ...(limit ? { take: limit } : {}),
-    });
+    const [products, total] = await Promise.all([
+      this.prisma.product.findMany({
+        where,
+        select: PRODUCT_SELECT,
+        orderBy: [{ featured: 'desc' }, { createdAt: 'desc' }],
+        skip: (page - 1) * limit,
+        take: limit,
+      }),
+      this.prisma.product.count({ where }),
+    ]);
 
-    return products.map(serialize);
+    return {
+      data: products.map(serialize),
+      total,
+      page,
+      limit,
+      totalPages: Math.ceil(total / limit),
+    };
   }
 
   async findOne(id: string) {

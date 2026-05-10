@@ -9,6 +9,11 @@ import { OrdersModule } from './orders/orders.module';
 import { AuthModule } from './auth/auth.module';
 import { UploadsModule } from './uploads/uploads.module';
 import { PostsModule } from './posts/posts.module';
+import { LeadsModule } from './leads/leads.module';
+import { CustomersModule } from './customers/customers.module';
+import { InvoicesModule } from './invoices/invoices.module';
+import { TicketsModule } from './tickets/tickets.module';
+import { TeamModule } from './team/team.module';
 
 @Module({
   imports: [
@@ -20,6 +25,11 @@ import { PostsModule } from './posts/posts.module';
     AuthModule,
     UploadsModule,
     PostsModule,
+    LeadsModule,
+    CustomersModule,
+    InvoicesModule,
+    TicketsModule,
+    TeamModule,
   ],
   controllers: [AppController],
   providers: [AppService],

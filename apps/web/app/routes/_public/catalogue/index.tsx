@@ -19,10 +19,11 @@ export default function CataloguePage() {
   const [notes, setNotes] = useState("");
   const [exporting, setExporting] = useState(false);
 
-  const { data: products = [], isLoading } = useProducts({
+  const { data: productsData, isLoading } = useProducts({
     search: search || undefined,
     category: category || undefined,
   });
+  const products = productsData?.data ?? [];
   const { data: categories = [] } = useCategories();
 
   const items = useCatalogueStore((s) => s.items);

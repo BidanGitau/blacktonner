@@ -1,5 +1,6 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post, Query } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post, Query, UseGuards } from '@nestjs/common';
 import { PostsService } from './posts.service';
+import { RolesGuard } from '../auth/roles.guard';
 
 @Controller()
 export class PostsController {
@@ -25,6 +26,7 @@ export class PostsController {
   }
 
   // ── Admin ──────────────────────────────────────────
+  @UseGuards(RolesGuard)
   @Get('admin/posts')
   listAdmin(
     @Query('category') category?: string,
@@ -34,21 +36,25 @@ export class PostsController {
     return this.posts.findAllAdmin({ category, search, status });
   }
 
+  @UseGuards(RolesGuard)
   @Get('admin/posts/:id')
   getAdmin(@Param('id') id: string) {
     return this.posts.findOneAdmin(id);
   }
 
+  @UseGuards(RolesGuard)
   @Post('admin/posts')
   create(@Body() dto: any) {
     return this.posts.create(dto);
   }
 
+  @UseGuards(RolesGuard)
   @Patch('admin/posts/:id')
   update(@Param('id') id: string, @Body() dto: any) {
     return this.posts.update(id, dto);
   }
 
+  @UseGuards(RolesGuard)
   @Delete('admin/posts/:id')
   remove(@Param('id') id: string) {
     return this.posts.remove(id);

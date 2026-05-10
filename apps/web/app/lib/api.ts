@@ -36,6 +36,9 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
+// Centralised error handling — flatten NestJS error shapes into Error.message
+// so call sites and toast handlers never need to know the API shape, and bounce
+// to login on 401.
 api.interceptors.response.use(
   (res) => res,
   (err) => {
@@ -45,6 +48,10 @@ api.interceptors.response.use(
         window.location.href = "/login";
       }
     }
+    const data = err.response?.data;
+    const raw = data?.message ?? data?.error ?? err.message;
+    const message = Array.isArray(raw) ? raw.join(", ") : String(raw ?? "Request failed");
+    err.message = message;
     return Promise.reject(err);
   }
 );

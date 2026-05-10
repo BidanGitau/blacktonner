@@ -4,7 +4,6 @@ import {
   useReactTable,
   getCoreRowModel,
   getSortedRowModel,
-  getPaginationRowModel,
   getFilteredRowModel,
   flexRender,
   type ColumnDef,
@@ -30,6 +29,7 @@ import {
 } from "~/components/ui/dropdown-menu";
 import { Input } from "~/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "~/components/ui/table";
+import { Pagination } from "~/components/admin/Pagination";
 import { useProducts, useCategories, useDeleteProduct, useUpdateProduct } from "~/lib/queries";
 import type { Product } from "~/types";
 
@@ -37,6 +37,8 @@ const selectCls =
   "h-9 rounded-md border border-stone-200 bg-white px-3 text-sm text-black focus:outline-none focus:ring-1 focus:ring-black/40";
 
 export default function AdminProductsPage() {
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(20);
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState("");
   const [sorting, setSorting] = useState<SortingState>([]);
@@ -44,10 +46,14 @@ export default function AdminProductsPage() {
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
   const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
 
-  const { data: products = [], isLoading } = useProducts({
+  const { data: productsData, isLoading } = useProducts({
     search: search || undefined,
     category: category || undefined,
+    page,
+    limit: pageSize,
   });
+  const products = productsData?.data ?? [];
+  const total = productsData?.total ?? 0;
   const { data: categories = [] } = useCategories();
   const deleteProduct = useDeleteProduct();
   const updateProduct = useUpdateProduct();
@@ -207,10 +213,10 @@ export default function AdminProductsPage() {
     onRowSelectionChange: setRowSelection,
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
-    getPaginationRowModel: getPaginationRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
+    manualPagination: true,
+    pageCount: productsData?.totalPages ?? 0,
     enableRowSelection: true,
-    initialState: { pagination: { pageSize: 20 } },
   });
 
   return (
@@ -225,7 +231,7 @@ export default function AdminProductsPage() {
           </h1>
         </div>
         <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-black/45">
-          {products.length} total
+          {total} total
         </p>
       </header>
 
@@ -235,14 +241,14 @@ export default function AdminProductsPage() {
           <Search className="absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-black/35" strokeWidth={1.8} />
           <Input
             value={search}
-            onChange={(e) => setSearch(e.target.value)}
+            onChange={(e) => { setSearch(e.target.value); setPage(1); }}
             placeholder="Search by name, brand or SKU…"
             className="pl-9"
           />
         </div>
         <select
           value={category}
-          onChange={(e) => setCategory(e.target.value)}
+          onChange={(e) => { setCategory(e.target.value); setPage(1); }}
           className={selectCls}
         >
           <option value="">All categories</option>
@@ -327,19 +333,14 @@ export default function AdminProductsPage() {
       )}
 
       {/* Pagination */}
-      <div className="mt-4 flex items-center justify-between">
-        <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-black/45">
-          {table.getFilteredSelectedRowModel().rows.length} of {table.getFilteredRowModel().rows.length} selected
-        </p>
-        <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm" onClick={() => table.previousPage()} disabled={!table.getCanPreviousPage()}>
-            Previous
-          </Button>
-          <Button variant="outline" size="sm" onClick={() => table.nextPage()} disabled={!table.getCanNextPage()}>
-            Next
-          </Button>
-        </div>
-      </div>
+      <Pagination
+        page={page}
+        pageSize={pageSize}
+        totalCount={total}
+        onPageChange={setPage}
+        onPageSizeChange={(newSize) => { setPageSize(newSize); setPage(1); }}
+        selectedCount={table.getFilteredSelectedRowModel().rows.length}
+      />
     </div>
   );
 }

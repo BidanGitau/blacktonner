@@ -1,5 +1,5 @@
-import { Link } from "react-router";
-import { ArrowRight, FileText } from "lucide-react";
+import { Link, useSearchParams } from "react-router";
+import { ArrowRight, FileText, X } from "lucide-react";
 
 export function ProductsPageHeader({
   title,
@@ -8,6 +8,15 @@ export function ProductsPageHeader({
   title: string;
   countLabel: string;
 }) {
+  const [searchParams, setSearchParams] = useSearchParams();
+  const searchQuery = searchParams.get("q") ?? "";
+
+  function clearSearch() {
+    const next = new URLSearchParams(searchParams);
+    next.delete("q");
+    setSearchParams(next);
+  }
+
   return (
     <div className="border-b border-stone-200 bg-white">
       <div className="container mx-auto flex flex-col gap-4 px-4 py-6 lg:flex-row lg:items-end lg:justify-between lg:gap-10 lg:px-6">
@@ -21,9 +30,19 @@ export function ProductsPageHeader({
           >
             {title}
           </h1>
-          <p className="mt-2 text-[10px] font-bold uppercase tracking-[0.2em] text-black/40">
-            {countLabel}
-          </p>
+          <div className="mt-2 flex items-center gap-2">
+            <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-black/40">
+              {countLabel}
+            </p>
+            {searchQuery && (
+              <span className="inline-flex items-center gap-1 rounded-full bg-stone-100 px-2 py-0.5 text-[10px] font-medium text-black/60">
+                "{searchQuery}"
+                <button onClick={clearSearch} className="hover:text-black">
+                  <X className="h-3 w-3" />
+                </button>
+              </span>
+            )}
+          </div>
         </div>
 
         <Link

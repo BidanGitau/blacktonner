@@ -41,6 +41,63 @@ enum PostCategory {
   news
 }
 
+enum LeadStatus {
+  new_lead
+  contacted
+  qualified
+  proposal_sent
+  negotiating
+  won
+  lost
+  on_hold
+}
+
+enum LeadSource {
+  catalogue
+  checkout
+  walk_in
+  referral
+  inbound_call
+  whatsapp
+  social
+  other
+}
+
+enum LeadActivityType {
+  call_outbound
+  call_inbound
+  whatsapp
+  email
+  meeting
+  note
+  status_change
+}
+
+enum InvoiceStatus {
+  draft
+  issued
+  partial
+  paid
+  cancelled
+}
+
+enum TicketStatus {
+  new_ticket
+  assigned
+  in_progress
+  awaiting_parts
+  resolved
+  closed
+  cancelled
+}
+
+enum TicketPriority {
+  low
+  normal
+  high
+  urgent
+}
+
 model User {
   id            String      @id @default(cuid())
   name          String
@@ -52,6 +109,13 @@ model User {
   lastLogin     DateTime?
   orders        Order[]
   catalogues    Catalogue[]
+  assignedLeads Lead[]
+  createdLeads  Lead[]      @relation("LeadCreatedBy")
+  leadActivity  LeadActivity[]
+  invoices      Invoice[]
+  ticketsRaised   Ticket[]      @relation("TicketRaisedBy")
+  ticketsAssigned Ticket[]      @relation("TicketAssignedTo")
+  ticketUpdates   TicketUpdate[]
   createdAt     DateTime    @default(now())
   updatedAt     DateTime    @updatedAt
 }
@@ -92,6 +156,8 @@ model Product {
   categoryId      String
   orderItems      OrderItem[]
   catalogueItems  CatalogueItem[]
+  invoiceItems    InvoiceItem[]
+  tickets         Ticket[]
   prices          CompetitorPrice[]
   priceHistory    PriceHistory[]
   createdAt       DateTime            @default(now())
@@ -189,4 +255,148 @@ model Post {
 
   @@index([status, publishedAt])
   @@index([category])
+}
+
+model Lead {
+  id             String          @id @default(cuid())
+  name           String
+  phone          String
+  email          String?
+  company        String?
+  source         LeadSource      @default(other)
+  status         LeadStatus      @default(new_lead)
+  notes          String?
+  estimatedValue Decimal?        @db.Decimal(12, 2)
+  nextFollowUp   DateTime?
+  closedAt       DateTime?
+  closedReason   String?
+  assignedTo     User?           @relation(fields: [assignedToId], references: [id])
+  assignedToId   String?
+  createdBy      User?           @relation("LeadCreatedBy", fields: [createdById], references: [id])
+  createdById    String?
+  customer       Customer?       @relation(fields: [customerId], references: [id])
+  customerId     String?
+  activities     LeadActivity[]
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+
+  @@index([status])
+  @@index([assignedToId])
+  @@index([nextFollowUp])
+}
+
+model LeadActivity {
+  id           String           @id @default(cuid())
+  lead         Lead             @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  leadId       String
+  type         LeadActivityType
+  outcome      String?
+  feedback     String?
+  durationSec  Int?
+  recordingUrl String?
+  agent        User?            @relation(fields: [agentId], references: [id])
+  agentId      String?
+  fromStatus   LeadStatus?
+  toStatus     LeadStatus?
+  createdAt    DateTime         @default(now())
+
+  @@index([leadId, createdAt])
+}
+
+model Customer {
+  id        String     @id @default(cuid())
+  name      String
+  phone     String
+  email     String?
+  company   String?
+  address   String?
+  notes     String?
+  invoices  Invoice[]
+  tickets   Ticket[]
+  leads     Lead[]
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+
+  @@index([phone])
+  @@index([name])
+}
+
+model Invoice {
+  id          String        @id @default(cuid())
+  number      String        @unique
+  customer    Customer      @relation(fields: [customerId], references: [id])
+  customerId  String
+  items       InvoiceItem[]
+  status      InvoiceStatus @default(draft)
+  subtotal    Decimal       @db.Decimal(12, 2)
+  taxRate     Decimal       @default(0) @db.Decimal(5, 2)
+  taxAmount   Decimal       @default(0) @db.Decimal(12, 2)
+  total       Decimal       @db.Decimal(12, 2)
+  paidAmount  Decimal       @default(0) @db.Decimal(12, 2)
+  dueDate     DateTime?
+  notes       String?
+  createdBy   User?         @relation(fields: [createdById], references: [id])
+  createdById String?
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  @@index([customerId])
+  @@index([status])
+  @@index([createdAt])
+}
+
+model InvoiceItem {
+  id          String   @id @default(cuid())
+  invoice     Invoice  @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+  invoiceId   String
+  product     Product? @relation(fields: [productId], references: [id])
+  productId   String?
+  sku         String?
+  description String
+  quantity    Decimal  @db.Decimal(10, 2)
+  unitPrice   Decimal  @db.Decimal(12, 2)
+  total       Decimal  @db.Decimal(12, 2)
+}
+
+model Ticket {
+  id           String         @id @default(cuid())
+  number       String         @unique
+  customer     Customer       @relation(fields: [customerId], references: [id])
+  customerId   String
+  product      Product?       @relation(fields: [productId], references: [id])
+  productId    String?
+  title        String
+  description  String
+  priority     TicketPriority @default(normal)
+  status       TicketStatus   @default(new_ticket)
+  raisedBy     User?          @relation("TicketRaisedBy", fields: [raisedById], references: [id])
+  raisedById   String?
+  assignedTo   User?          @relation("TicketAssignedTo", fields: [assignedToId], references: [id])
+  assignedToId String?
+  scheduledFor DateTime?
+  resolvedAt   DateTime?
+  closedAt     DateTime?
+  reportUrl    String?
+  reportNotes  String?
+  updates      TicketUpdate[]
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+
+  @@index([status])
+  @@index([assignedToId])
+  @@index([customerId])
+}
+
+model TicketUpdate {
+  id         String        @id @default(cuid())
+  ticket     Ticket        @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  ticketId   String
+  author     User?         @relation(fields: [authorId], references: [id])
+  authorId   String?
+  body       String
+  fromStatus TicketStatus?
+  toStatus   TicketStatus?
+  createdAt  DateTime      @default(now())
+
+  @@index([ticketId, createdAt])
 }

@@ -5,11 +5,33 @@ import { PrismaService } from '../prisma/prisma.service';
 export class CategoriesService {
   constructor(private prisma: PrismaService) {}
 
-  findAll() {
+  findAll(params: { page?: number; limit?: number; search?: string }) {
+    const { page = 1, limit = 20, search } = params;
+    const where: any = {};
+    if (search) {
+      where.OR = [
+        { name: { contains: search, mode: 'insensitive' } },
+        { slug: { contains: search, mode: 'insensitive' } },
+      ];
+    }
     return this.prisma.category.findMany({
+      where,
       orderBy: { name: 'asc' },
       include: { _count: { select: { products: true } } },
+      skip: (page - 1) * limit,
+      take: limit,
     });
+  }
+
+  async count(search?: string) {
+    const where: any = {};
+    if (search) {
+      where.OR = [
+        { name: { contains: search, mode: 'insensitive' } },
+        { slug: { contains: search, mode: 'insensitive' } },
+      ];
+    }
+    return this.prisma.category.count({ where });
   }
 
   create(data: { name: string; slug: string; description?: string }) {

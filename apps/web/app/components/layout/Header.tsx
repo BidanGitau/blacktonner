@@ -1,4 +1,4 @@
-import { Link, useLocation } from "react-router";
+import { Link, useLocation, useNavigate } from "react-router";
 import { ShoppingBag, Search, X, Menu, User } from "lucide-react";
 import { useCartStore } from "~/store/cart";
 import { useState, useEffect } from "react";
@@ -16,8 +16,10 @@ const NAV_LINKS = [
 export function Header() {
   const count = useCartStore((s) => s.count());
   const location = useLocation();
+  const navigate = useNavigate();
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 4);
@@ -32,6 +34,15 @@ export function Header() {
     to === "/products"
       ? location.pathname === "/products" && !location.search
       : location.pathname + location.search === to;
+
+  function handleSearch(e: React.FormEvent) {
+    e.preventDefault();
+    if (searchQuery.trim()) {
+      navigate(`/products?q=${encodeURIComponent(searchQuery.trim())}`);
+      setSearchQuery("");
+      setMobileOpen(false);
+    }
+  }
 
   return (
     <>
@@ -77,9 +88,18 @@ export function Header() {
 
           {/* Right actions */}
           <div className="flex items-center gap-4 md:gap-5 ml-auto">
-            <Link to="/search" aria-label="Search" className="hidden sm:flex h-9 w-9 items-center justify-center text-black hover:opacity-60 transition-opacity">
-              <Search className="h-5 w-5" strokeWidth={1.6} />
-            </Link>
+            <form onSubmit={handleSearch} className="hidden sm:flex items-center">
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Search products..."
+                className="h-9 w-48 rounded-md border border-stone-200 bg-white px-3 text-sm text-black placeholder:text-black/35 focus:outline-none focus:ring-1 focus:ring-black/40"
+              />
+              <button type="submit" className="ml-2 flex h-9 w-9 items-center justify-center text-black hover:opacity-60 transition-opacity">
+                <Search className="h-5 w-5" strokeWidth={1.6} />
+              </button>
+            </form>
             <Link to="/login" aria-label="Account" className="hidden sm:flex h-9 w-9 items-center justify-center text-black hover:opacity-60 transition-opacity">
               <User className="h-5 w-5" strokeWidth={1.6} />
             </Link>
@@ -97,6 +117,20 @@ export function Header() {
         {/* Mobile drawer */}
         {mobileOpen && (
           <div className="md:hidden bg-white border-t border-stone-200">
+            <form onSubmit={handleSearch} className="px-6 py-4 border-b border-stone-200">
+              <div className="flex items-center gap-2">
+                <input
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder="Search products..."
+                  className="flex-1 h-9 rounded-md border border-stone-200 bg-white px-3 text-sm text-black placeholder:text-black/35 focus:outline-none focus:ring-1 focus:ring-black/40"
+                />
+                <button type="submit" className="flex h-9 w-9 items-center justify-center text-black">
+                  <Search className="h-5 w-5" strokeWidth={1.6} />
+                </button>
+              </div>
+            </form>
             <nav className="flex flex-col">
               {NAV_LINKS.map((link) => (
                 <Link
@@ -110,9 +144,6 @@ export function Header() {
                 </Link>
               ))}
               <div className="grid grid-cols-2 border-t border-stone-200">
-                <Link to="/search" className="flex items-center justify-center gap-2 py-4 text-[11px] font-bold uppercase tracking-[0.2em] text-black hover:bg-stone-50">
-                  <Search className="h-4 w-4" strokeWidth={1.6} /> Search
-                </Link>
                 <Link to="/login" className="flex items-center justify-center gap-2 py-4 text-[11px] font-bold uppercase tracking-[0.2em] text-black hover:bg-stone-50 border-l border-stone-200">
                   <User className="h-4 w-4" strokeWidth={1.6} /> Account
                 </Link>

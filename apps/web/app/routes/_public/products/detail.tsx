@@ -39,10 +39,13 @@ export default function ProductDetailPage() {
     return () => obs.disconnect();
   }, [product]);
 
-  const { data: categoryProducts = [] } = useProducts(
+  const { data: categoryProductsData } = useProducts(
     product ? { category: product.category.slug } : {}
   );
-  const { data: allProducts = [] } = useProducts({});
+  const { data: allProductsData } = useProducts({});
+
+  const categoryProducts = categoryProductsData?.data ?? [];
+  const allProducts = allProductsData?.data ?? [];
 
   const compatibleAll = useMemo(() => {
     if (!product?.relatedSkus?.length) return [];

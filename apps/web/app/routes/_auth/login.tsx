@@ -2,7 +2,8 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router";
 import { Loader2 } from "lucide-react";
 import { useLogin } from "~/lib/queries";
-import { useAuthStore } from "~/store/auth";
+import { useAuthStore, type StaffRole } from "~/store/auth";
+import { ROLE_LANDING } from "~/lib/role-access";
 
 export default function LoginPage() {
   const navigate = useNavigate();
@@ -18,7 +19,8 @@ export default function LoginPage() {
     login.mutate({ email, password }, {
       onSuccess: ({ user, token }) => {
         setAuth(user, token);
-        navigate("/admin");
+        const landing = ROLE_LANDING[user.role as StaffRole] ?? "/admin";
+        navigate(landing);
       },
       onError: (err: any) => {
         setError(err?.response?.data?.message ?? "Login failed");

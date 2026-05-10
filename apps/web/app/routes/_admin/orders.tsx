@@ -25,6 +25,7 @@ import {
   DropdownMenuTrigger,
 } from "~/components/ui/dropdown-menu";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "~/components/ui/table";
+import { Pagination } from "~/components/admin/Pagination";
 import { useAdminOrders } from "~/lib/queries";
 import { ORDER_STATUS_LABELS, type Order, type OrderStatus } from "~/types";
 
@@ -45,6 +46,7 @@ export default function AdminOrdersPage() {
   const [from, setFrom] = useState("");
   const [to, setTo] = useState("");
   const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(20);
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
@@ -55,7 +57,7 @@ export default function AdminOrdersPage() {
     from: from || undefined,
     to: to || undefined,
     page,
-    limit: 20,
+    limit: pageSize,
   });
 
   const orders = data?.data ?? [];
@@ -261,19 +263,13 @@ export default function AdminOrdersPage() {
       )}
 
       {/* Pagination */}
-      <div className="mt-4 flex items-center justify-between">
-        <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-black/45">
-          Page {page} of {totalPages}
-        </p>
-        <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm" onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={page === 1}>
-            Previous
-          </Button>
-          <Button variant="outline" size="sm" onClick={() => setPage((p) => Math.min(totalPages, p + 1))} disabled={page === totalPages}>
-            Next
-          </Button>
-        </div>
-      </div>
+      <Pagination
+        page={page}
+        pageSize={pageSize}
+        totalCount={total}
+        onPageChange={setPage}
+        onPageSizeChange={(newSize) => { setPageSize(newSize); setPage(1); }}
+      />
     </div>
   );
 }

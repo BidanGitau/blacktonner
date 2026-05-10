@@ -11,7 +11,7 @@ import {
   type VisibilityState,
   type RowSelectionState,
 } from "@tanstack/react-table";
-import { Plus, Pencil, Trash2, Tag, X, Check, Search, MoreHorizontal, SlidersHorizontal } from "lucide-react";
+import { Plus, Pencil, Trash2, Tag, X, Check, Search, MoreHorizontal, SlidersHorizontal, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from "lucide-react";
 import { DataTableColumnHeader } from "~/components/admin/data-table-column-header";
 import { DataTableSkeleton } from "~/components/admin/data-table";
 import { Badge } from "~/components/ui/badge";
@@ -27,7 +27,7 @@ import {
 } from "~/components/ui/dropdown-menu";
 import { Input } from "~/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "~/components/ui/table";
-import { useCategories, useCreateCategory, useUpdateCategory, useDeleteCategory } from "~/lib/queries";
+import { useCategories, useCategoriesCount, useCreateCategory, useUpdateCategory, useDeleteCategory } from "~/lib/queries";
 import type { Category } from "~/types";
 
 interface FormState { name: string; slug: string; description: string; }
@@ -41,10 +41,17 @@ const inputCls =
   "h-9 w-full rounded-md border border-stone-200 bg-white px-3 text-sm text-black placeholder:text-black/35 focus:outline-none focus:ring-1 focus:ring-black/40";
 
 export default function CategoriesPage() {
-  const { data: categories = [], isLoading } = useCategories();
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(20);
+  const [globalFilter, setGlobalFilter] = useState("");
+
+  const { data: categories = [], isLoading } = useCategories({ page, limit: pageSize, search: globalFilter });
+  const { data: totalCount = 0 } = useCategoriesCount(globalFilter);
   const create = useCreateCategory();
   const update = useUpdateCategory();
   const del = useDeleteCategory();
+
+  const totalPages = Math.ceil(totalCount / pageSize) || 1;
 
   const [adding, setAdding] = useState(false);
   const [editId, setEditId] = useState<string | null>(null);
@@ -53,7 +60,6 @@ export default function CategoriesPage() {
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
   const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
-  const [globalFilter, setGlobalFilter] = useState("");
 
   function startEdit(cat: Category) {
     setEditId(cat.id);
@@ -236,7 +242,7 @@ export default function CategoriesPage() {
       <div className="mb-4 flex items-center gap-2">
         <div className="relative max-w-sm flex-1">
           <Search className="absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-black/35" strokeWidth={1.8} />
-          <Input value={globalFilter} onChange={(e) => setGlobalFilter(e.target.value)} placeholder="Filter categories…" className="pl-9" />
+          <Input value={globalFilter} onChange={(e) => { setGlobalFilter(e.target.value); setPage(1); }} placeholder="Filter categories…" className="pl-9" />
         </div>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
@@ -315,9 +321,64 @@ export default function CategoriesPage() {
 
       {/* Pagination */}
       <div className="mt-4 flex items-center justify-between">
-        <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-black/45">
-          {table.getFilteredSelectedRowModel().rows.length} of {table.getFilteredRowModel().rows.length} selected
-        </p>
+        <div className="flex items-center gap-4">
+          <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-black/45">
+            {table.getFilteredSelectedRowModel().rows.length} of {totalCount} total
+          </p>
+          <div className="flex items-center gap-2">
+            <span className="text-xs text-black/55">Rows per page</span>
+            <select
+              value={pageSize}
+              onChange={(e) => { setPageSize(Number(e.target.value)); setPage(1); }}
+              className="h-8 rounded-md border border-stone-200 bg-white px-2 text-xs"
+            >
+              {[20, 50, 100].map((size) => (
+                <option key={size} value={size}>{size}</option>
+              ))}
+            </select>
+          </div>
+          <span className="text-xs text-black/55">
+            Page {page} of {totalPages}
+          </span>
+        </div>
+        <div className="flex items-center gap-1">
+          <Button
+            variant="outline"
+            size="icon"
+            className="h-8 w-8"
+            disabled={page === 1}
+            onClick={() => setPage(1)}
+          >
+            <ChevronsLeft className="h-4 w-4" />
+          </Button>
+          <Button
+            variant="outline"
+            size="icon"
+            className="h-8 w-8"
+            disabled={page === 1}
+            onClick={() => setPage((p) => Math.max(1, p - 1))}
+          >
+            <ChevronLeft className="h-4 w-4" />
+          </Button>
+          <Button
+            variant="outline"
+            size="icon"
+            className="h-8 w-8"
+            disabled={page >= totalPages}
+            onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+          >
+            <ChevronRight className="h-4 w-4" />
+          </Button>
+          <Button
+            variant="outline"
+            size="icon"
+            className="h-8 w-8"
+            disabled={page >= totalPages}
+            onClick={() => setPage(totalPages)}
+          >
+            <ChevronsRight className="h-4 w-4" />
+          </Button>
+        </div>
       </div>
       </div>
     </div>

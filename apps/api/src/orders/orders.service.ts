@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 
 const ORDER_SELECT = {
@@ -27,6 +27,14 @@ const ORDER_SELECT = {
       product: { select: { id: true, name: true, sku: true, images: true } },
     },
   },
+};
+
+const VALID_TRANSITIONS: Record<string, string[]> = {
+  pending_confirmation: ['confirmed', 'cancelled'],
+  confirmed: ['out_for_delivery', 'cancelled'],
+  out_for_delivery: ['delivered', 'cancelled'],
+  delivered: [],
+  cancelled: ['pending_confirmation'],
 };
 
 function serialize(o: any) {
@@ -115,7 +123,13 @@ export class OrdersService {
   }
 
   async updateStatus(id: string, status: string) {
-    await this.findOne(id);
+    const order = await this.findOne(id);
+    const allowed = VALID_TRANSITIONS[order.status];
+    if (!allowed.includes(status)) {
+      throw new BadRequestException(
+        `Cannot transition from ${order.status} to ${status}`,
+      );
+    }
     const data: any = { status };
     if (status === 'delivered') data.deliveredAt = new Date();
     if (status === 'cancelled') data.cancelledAt = new Date();

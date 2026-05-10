@@ -18,9 +18,13 @@ export default function Home() {
   const [slide, setSlide] = useState(0);
   const [catIndex, setCatIndex] = useState(0);
 
-  const { data: hotDeals = [] }    = useProducts({ badge: "Hot Deal",    limit: 3 });
-  const { data: bestSellers = [] } = useProducts({ badge: "Best Seller", limit: 3 });
-  const { data: featured = [] }    = useProducts({ featured: true,       limit: 8 });
+  const { data: hotDealsData }    = useProducts({ badge: "Hot Deal",    limit: 3 });
+  const { data: bestSellersData } = useProducts({ badge: "Best Seller", limit: 3 });
+  const { data: featuredData }    = useProducts({ featured: true,       limit: 8 });
+
+  const hotDeals = hotDealsData?.data ?? [];
+  const bestSellers = bestSellersData?.data ?? [];
+  const featured = featuredData?.data ?? [];
 
   const heroSlides = [...hotDeals, ...bestSellers].slice(0, 6);
 

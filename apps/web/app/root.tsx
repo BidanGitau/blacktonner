@@ -6,9 +6,11 @@ import {
   Scripts,
   ScrollRestoration,
 } from "react-router";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { QueryClientProvider } from "@tanstack/react-query";
 import { useState } from "react";
+import { Toaster } from "sonner";
 
+import { createQueryClient } from "./lib/query-client";
 import type { Route } from "./+types/root";
 import "./app.css";
 
@@ -47,21 +49,23 @@ export function Layout({ children }: { children: React.ReactNode }) {
 }
 
 export default function App() {
-  const [queryClient] = useState(
-    () =>
-      new QueryClient({
-        defaultOptions: {
-          queries: {
-            staleTime: 1000 * 60 * 2,
-            retry: 1,
-          },
-        },
-      })
-  );
+  const [queryClient] = useState(createQueryClient);
 
   return (
     <QueryClientProvider client={queryClient}>
       <Outlet />
+      <Toaster
+        position="top-right"
+        theme="light"
+        toastOptions={{
+          style: {
+            border: "1px solid var(--color-stone-200, #e7e5e4)",
+            borderRadius: "0.375rem",
+            fontSize: "13px",
+          },
+          className: "font-sans",
+        }}
+      />
     </QueryClientProvider>
   );
 }

@@ -1,10 +1,11 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { JwtService } from '@nestjs/jwt';
 import { PrismaService } from '../prisma/prisma.service';
 import * as crypto from 'crypto';
 
 @Injectable()
 export class AuthService {
-  constructor(private prisma: PrismaService) {}
+  constructor(private prisma: PrismaService, private jwt: JwtService) {}
 
   async login(email: string, password: string) {
     const user = await this.prisma.user.findUnique({ where: { email } });
@@ -15,9 +16,11 @@ export class AuthService {
     if (user.password !== password && user.password !== hashed) {
       throw new UnauthorizedException('Invalid credentials');
     }
-    if (user.role !== 'admin') throw new UnauthorizedException('Admin access required');
+    if (!['admin', 'sales', 'technician'].includes(user.role)) {
+      throw new UnauthorizedException('Staff access required');
+    }
 
-    const token = crypto.randomBytes(32).toString('hex');
+    const token = await this.jwt.signAsync({ sub: user.id, role: user.role });
     return {
       token,
       user: {

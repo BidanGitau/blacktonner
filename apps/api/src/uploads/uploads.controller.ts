@@ -1,7 +1,9 @@
-import { Controller, Post, Get, Param, Body, Res, HttpException, HttpStatus } from '@nestjs/common';
+import { Controller, Post, Get, Param, Body, Res, HttpException, HttpStatus, UseGuards } from '@nestjs/common';
 import { join } from 'path';
 import * as fs from 'fs';
 import * as crypto from 'crypto';
+import { RolesGuard } from '../auth/roles.guard';
+import { Roles } from '../auth/roles.decorator';
 
 @Controller('uploads')
 export class UploadsController {
@@ -11,6 +13,8 @@ export class UploadsController {
     if (!fs.existsSync(this.dir)) fs.mkdirSync(this.dir, { recursive: true });
   }
 
+  @UseGuards(RolesGuard)
+  @Roles('admin', 'sales', 'technician')
   @Post()
   upload(@Body() body: { filename: string; data: string }) {
     const ext = (body.filename.split('.').pop() ?? 'jpg').replace(/[^a-z0-9]/gi, '');

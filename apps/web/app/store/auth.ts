@@ -1,6 +1,8 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-import type { User } from "~/types";
+import type { Role, User } from "~/types";
+
+export type StaffRole = Extract<Role, "admin" | "sales" | "technician">;
 
 interface AuthStore {
   user: User | null;
@@ -9,8 +11,12 @@ interface AuthStore {
   setAuth: (user: User, token: string) => void;
   logout: () => void;
   isAdmin: () => boolean;
+  isStaff: () => boolean;
+  hasRole: (...roles: StaffRole[]) => boolean;
   setHasHydrated: (v: boolean) => void;
 }
+
+const STAFF_ROLES: Role[] = ["admin", "sales", "technician"];
 
 export const useAuthStore = create<AuthStore>()(
   persist(
@@ -27,6 +33,14 @@ export const useAuthStore = create<AuthStore>()(
         set({ user: null, token: null });
       },
       isAdmin: () => get().user?.role === "admin",
+      isStaff: () => {
+        const role = get().user?.role;
+        return !!role && STAFF_ROLES.includes(role);
+      },
+      hasRole: (...roles) => {
+        const role = get().user?.role;
+        return !!role && (roles as string[]).includes(role);
+      },
       setHasHydrated: (v) => set({ _hasHydrated: v }),
     }),
     {
