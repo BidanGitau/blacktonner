@@ -1,5 +1,6 @@
 import { Controller, Get, Post, Patch, Param, Body, Query, UseGuards } from '@nestjs/common';
 import { OrdersService } from './orders.service';
+import { CreateOrderDto } from './dto/create-order.dto';
 import { QueryOrdersDto } from './dto/query-orders.dto';
 import { UpdateOrderStatusDto } from './dto/update-order-status.dto';
 import { RolesGuard } from '../auth/roles.guard';
@@ -7,6 +8,11 @@ import { RolesGuard } from '../auth/roles.guard';
 @Controller('orders')
 export class OrdersController {
   constructor(private readonly ordersService: OrdersService) {}
+
+  @Post()
+  create(@Body() dto: CreateOrderDto) {
+    return this.ordersService.create(dto);
+  }
 
   @UseGuards(RolesGuard)
   @Get('stats')
@@ -27,7 +33,6 @@ export class OrdersController {
     });
   }
 
-  @UseGuards(RolesGuard)
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.ordersService.findOne(id);

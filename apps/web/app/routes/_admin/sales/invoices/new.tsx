@@ -267,7 +267,8 @@ function Row({ label, value, muted, bold }: { label: string; value: string; mute
 
 function ProductPickerSlider({ onPick, onClose }: { onPick: (p: Product) => void; onClose: () => void }) {
   const [search, setSearch] = useState("");
-  const { data: products = [] } = useProducts({ search: search || undefined });
+  const { data } = useProducts({ search: search || undefined });
+  const products = data?.data ?? [];
 
   return (
     <div className="fixed inset-0 z-50 flex">

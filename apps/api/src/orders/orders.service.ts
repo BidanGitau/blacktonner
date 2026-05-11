@@ -1,5 +1,11 @@
 import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import * as crypto from 'crypto';
 import { PrismaService } from '../prisma/prisma.service';
+import { CreateOrderDto } from './dto/create-order.dto';
+
+function hash(password: string) {
+  return crypto.createHash('sha256').update(password).digest('hex');
+}
 
 const ORDER_SELECT = {
   id: true,
@@ -136,6 +142,71 @@ export class OrdersService {
     return serialize(
       await this.prisma.order.update({ where: { id }, data, select: ORDER_SELECT }),
     );
+  }
+
+  async create(dto: CreateOrderDto) {
+    if (!dto.items?.length) throw new BadRequestException('Cart is empty');
+    if (!dto.name?.trim() || !dto.email?.trim() || !dto.phone?.trim() || !dto.address?.trim()) {
+      throw new BadRequestException('Missing required customer or delivery details');
+    }
+
+    const productIds = dto.items.map((i) => i.productId);
+    const products = await this.prisma.product.findMany({
+      where: { id: { in: productIds }, active: true },
+      select: { id: true, price: true, stock: true, name: true },
+    });
+    if (products.length !== productIds.length) {
+      throw new BadRequestException('One or more products are no longer available');
+    }
+    const productMap = new Map(products.map((p) => [p.id, p]));
+
+    let subtotal = 0;
+    const itemsData = dto.items.map((i) => {
+      const p = productMap.get(i.productId)!;
+      if (i.quantity < 1) throw new BadRequestException(`Invalid quantity for ${p.name}`);
+      const unitPrice = Number(p.price);
+      const lineTotal = unitPrice * i.quantity;
+      subtotal += lineTotal;
+      return {
+        productId: i.productId,
+        quantity: i.quantity,
+        unitPrice,
+        total: lineTotal,
+      };
+    });
+
+    const deliveryFee = Number(dto.deliveryFee) || 0;
+    const total = subtotal + deliveryFee;
+
+    const customer = await this.prisma.user.upsert({
+      where: { email: dto.email.trim().toLowerCase() },
+      update: { name: dto.name.trim(), phone: dto.phone.trim() },
+      create: {
+        name: dto.name.trim(),
+        email: dto.email.trim().toLowerCase(),
+        phone: dto.phone.trim(),
+        password: hash(crypto.randomBytes(16).toString('hex')),
+        role: 'customer',
+      },
+      select: { id: true },
+    });
+
+    const order = await this.prisma.order.create({
+      data: {
+        customerId: customer.id,
+        deliveryAddress: dto.address.trim(),
+        deliveryZone: dto.deliveryZone,
+        deliveryFee,
+        subtotal,
+        total,
+        phone: dto.phone.trim(),
+        notes: dto.notes?.trim() || null,
+        items: { create: itemsData },
+      },
+      select: ORDER_SELECT,
+    });
+
+    return serialize(order);
   }
 
   async confirm(id: string) {

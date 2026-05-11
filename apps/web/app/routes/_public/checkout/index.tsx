@@ -1,9 +1,10 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router";
 import type { MetaFunction } from "react-router";
-import { ArrowLeft, ArrowRight, CheckCircle, Loader2, Mail, ShoppingBag } from "lucide-react";
+import { ArrowLeft, ArrowRight, Loader2, ShoppingBag } from "lucide-react";
 
-import { BRAND, normaliseKePhone } from "~/lib/brand";
+import { normaliseKePhone } from "~/lib/brand";
+import { useCreateOrder } from "~/lib/queries";
 import { DELIVERY_ZONE_OPTIONS, useCartStore } from "~/store/cart";
 
 export const meta: MetaFunction = () => [
@@ -34,10 +35,11 @@ export default function CheckoutPage() {
   const [address, setAddress] = useState("");
   const [notes, setNotes] = useState("");
   const [errors, setErrors] = useState<Errors>({});
-  const [submitting, setSubmitting] = useState(false);
-  const [sent, setSent] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
-  if (items.length === 0 && !sent) {
+  const createOrder = useCreateOrder();
+
+  if (items.length === 0) {
     return (
       <div className="bg-white">
         <div className="container mx-auto px-4 py-16 lg:px-6">
@@ -73,95 +75,36 @@ export default function CheckoutPage() {
     return Object.keys(next).length === 0;
   }
 
-  function buildEmailBody(): string {
-    const lines: string[] = [];
-    lines.push("New order request from blacktoner.co.ke");
-    lines.push("");
-    lines.push("CUSTOMER");
-    lines.push(`Name:    ${name.trim()}`);
-    lines.push(`Phone:   ${phone.trim()}`);
-    lines.push(`Email:   ${email.trim()}`);
-    lines.push(`Address: ${address.trim()}`);
-    lines.push(`Zone:    ${deliveryZone}`);
-    if (notes.trim()) {
-      lines.push("");
-      lines.push("NOTES");
-      lines.push(notes.trim());
-    }
-    lines.push("");
-    lines.push("ITEMS");
-    items.forEach(({ product, quantity }, i) => {
-      const lineTotal = product.price * quantity;
-      lines.push(
-        `${String(i + 1).padStart(2, "0")}. ${product.name} (${product.sku})  ×${quantity}  KES ${lineTotal.toLocaleString()}`,
-      );
-    });
-    lines.push("");
-    lines.push("TOTALS");
-    lines.push(`Subtotal:   KES ${subtotal.toLocaleString()}`);
-    lines.push(`Delivery:   KES ${deliveryFee.toLocaleString()}`);
-    lines.push(`Total:      KES ${total.toLocaleString()}`);
-    lines.push("");
-    lines.push("— Sent from blacktoner.co.ke checkout");
-    return lines.join("\n");
-  }
-
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!validate()) return;
-    setSubmitting(true);
+    setSubmitError(null);
 
-    const subject = `New order request — ${name.trim()} — KES ${total.toLocaleString()}`;
-    const body = buildEmailBody();
-    const mailto = `mailto:${BRAND.email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-
-    // Open the user's mail client with the pre-filled email
-    window.location.href = mailto;
-
-    // Mark as submitted (mail client opens in a separate window)
-    setTimeout(() => {
-      setSubmitting(false);
-      setSent(true);
-      clear();
-    }, 600);
-  }
-
-  if (sent) {
-    return (
-      <div className="bg-white">
-        <div className="container mx-auto px-4 py-16 lg:px-6">
-          <div className="mx-auto flex max-w-lg flex-col items-center gap-4 border border-stone-200 bg-white px-8 py-16 text-center">
-            <div className="flex h-14 w-14 items-center justify-center rounded-full border border-emerald-200 bg-emerald-50 text-emerald-600">
-              <CheckCircle className="h-6 w-6" strokeWidth={1.6} />
-            </div>
-            <p className="mb-1 text-[10px] font-bold uppercase tracking-[0.25em] text-black/40">
-              — Order Request Sent —
-            </p>
-            <h1 className="text-3xl font-black uppercase tracking-tight text-black" style={{ fontFamily: "var(--font-display)" }}>
-              Thank you, {name.split(" ")[0] || "friend"}
-            </h1>
-            <p className="max-w-md text-sm leading-relaxed text-black/55">
-              Your mail client should now be open with the order details addressed to {BRAND.email}.
-              Tap <strong className="text-black">Send</strong> to deliver it — our sales team will reach out within
-              the next few business hours to confirm stock and arrange delivery.
-            </p>
-            <div className="mt-2 flex items-center gap-5">
-              <Link
-                to="/products"
-                className="inline-flex items-center gap-2 bg-black px-6 py-3 text-[11px] font-bold uppercase tracking-[0.2em] text-white transition-colors hover:bg-black/85"
-              >
-                Continue Shopping <ArrowRight className="h-3.5 w-3.5" />
-              </Link>
-              <Link
-                to="/"
-                className="border-b border-black/20 pb-0.5 text-[11px] font-bold uppercase tracking-[0.2em] text-black/55 transition-colors hover:border-black hover:text-black"
-              >
-                Home
-              </Link>
-            </div>
-          </div>
-        </div>
-      </div>
+    createOrder.mutate(
+      {
+        name: name.trim(),
+        email: email.trim(),
+        phone: phone.trim(),
+        address: address.trim(),
+        deliveryZone,
+        deliveryFee,
+        notes: notes.trim() || undefined,
+        items: items.map(({ product, quantity }) => ({
+          productId: product.id,
+          quantity,
+        })),
+      },
+      {
+        onSuccess: (order) => {
+          clear();
+          navigate(`/order-confirmed/${order.id}`);
+        },
+        onError: (err: any) => {
+          setSubmitError(
+            err?.response?.data?.message ?? "Could not place order. Please try again.",
+          );
+        },
+      },
     );
   }
 
@@ -294,19 +237,20 @@ export default function CheckoutPage() {
             </section>
 
             <section className="border border-black/10 bg-stone-50 p-5">
-              <div className="flex items-start gap-3">
-                <Mail className="mt-0.5 h-4 w-4 shrink-0 text-black" strokeWidth={1.6} />
-                <div>
-                  <p className="text-[11px] font-bold uppercase tracking-[0.22em] text-black">
-                    How this works
-                  </p>
-                  <p className="mt-1.5 text-sm leading-relaxed text-black/65">
-                    When you submit, your mail client opens with these order details addressed to <strong className="text-black">{BRAND.email}</strong>.
-                    Tap <strong className="text-black">Send</strong> to deliver — our sales team responds within a few business hours to confirm stock and arrange delivery & payment.
-                  </p>
-                </div>
-              </div>
+              <p className="text-[11px] font-bold uppercase tracking-[0.22em] text-black">
+                How this works
+              </p>
+              <p className="mt-1.5 text-sm leading-relaxed text-black/65">
+                When you submit, we record your order and our sales team responds within a few business hours
+                to confirm stock and arrange delivery &amp; payment. No payment is taken right now.
+              </p>
             </section>
+
+            {submitError && (
+              <div className="border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+                {submitError}
+              </div>
+            )}
           </div>
 
           {/* Summary */}
@@ -364,16 +308,16 @@ export default function CheckoutPage() {
               <div className="border-t border-stone-200 p-5">
                 <button
                   type="submit"
-                  disabled={submitting}
+                  disabled={createOrder.isPending}
                   className="inline-flex h-12 w-full items-center justify-center gap-2 bg-black text-[11px] font-bold uppercase tracking-[0.22em] text-white transition-colors hover:bg-black/85 disabled:cursor-not-allowed disabled:bg-stone-300"
                 >
-                  {submitting ? (
+                  {createOrder.isPending ? (
                     <>
-                      <Loader2 className="h-3.5 w-3.5 animate-spin" /> Preparing email…
+                      <Loader2 className="h-3.5 w-3.5 animate-spin" /> Placing order…
                     </>
                   ) : (
                     <>
-                      <Mail className="h-3.5 w-3.5" /> Send Order Request
+                      Place Order <ArrowRight className="h-3.5 w-3.5" />
                     </>
                   )}
                 </button>

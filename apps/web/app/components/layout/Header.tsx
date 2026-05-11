@@ -14,14 +14,17 @@ const NAV_LINKS = [
 ];
 
 export function Header() {
-  const count = useCartStore((s) => s.count());
+  const rawCount = useCartStore((s) => s.count());
   const location = useLocation();
   const navigate = useNavigate();
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [mounted, setMounted] = useState(false);
+  const count = mounted ? rawCount : 0;
 
   useEffect(() => {
+    setMounted(true);
     const onScroll = () => setScrolled(window.scrollY > 4);
     onScroll();
     window.addEventListener("scroll", onScroll, { passive: true });

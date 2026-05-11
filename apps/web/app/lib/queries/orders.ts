@@ -49,6 +49,29 @@ export function useOrderStats() {
   });
 }
 
+interface CreateOrderPayload {
+  name: string;
+  email: string;
+  phone: string;
+  address: string;
+  deliveryZone: string;
+  deliveryFee: number;
+  notes?: string;
+  items: { productId: string; quantity: number }[];
+}
+
+export function useCreateOrder() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (payload: CreateOrderPayload) =>
+      api.post<Order>("/orders", payload).then((r) => r.data),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: orderKeys.all });
+      qc.invalidateQueries({ queryKey: orderKeys.stats });
+    },
+  });
+}
+
 export function useUpdateOrderStatus() {
   const qc = useQueryClient();
   return useMutation({
